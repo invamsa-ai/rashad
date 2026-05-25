@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نفاذ - اسم المستخدم وكلمة المرور</title>
+    <title>نفاذ - تسجيل الدخول</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -30,19 +30,48 @@
     <main class="login-main-content">
         <div class="accordion-container">
             
-            <div class="accordion-item collapsed">
+            <div class="accordion-item collapsed" id="tabNafathApp" data-target="panelNafathApp">
                 <span class="accordion-title">تطبيق نفاذ</span>
                 <i class="fa-solid fa-plus status-icon"></i>
             </div>
 
-            <div class="accordion-item active">
+            <div class="form-panel-card hidden-panel" id="panelNafathApp">
+                <div class="panel-grid">
+                    <div class="form-side">
+                        <form id="appForm" action="#" method="POST">
+                            <div class="input-group">
+                                <label for="nationalId">رقم بطاقة الأحوال/الإقامة</label>
+                                <input type="text" id="nationalId" placeholder="أدخل رقم الأحوال/الإقامة الخاص بك هنا" required>
+                            </div>
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+                            </button>
+                        </form>
+                        
+                        <div class="download-app-section">
+                            <span class="download-title">لتحميل تطبيق نفاذ</span>
+                            <div class="store-buttons">
+                                <img src="appstore.png" alt="App Store" class="store-btn">
+                                <img src="googleplay.png" alt="Google Play" class="store-btn">
+                                <img src="appgallery.png" alt="AppGallery" class="store-btn">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="illustration-side">
+                        <img src="secure.svg" alt="Secure Authentication" class="secure-vector-img">
+                        <p class="instruction-text">الرجاء إدخال رقم بطاقة الأحوال/الإقامة، ثم اضغط دخول.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item active" id="tabUserPass" data-target="panelUserPass">
                 <span class="accordion-title">اسم المستخدم وكلمة المرور</span>
                 <i class="fa-solid fa-minus status-icon"></i>
             </div>
 
-            <div class="form-panel-card">
+            <div class="form-panel-card" id="panelUserPass">
                 <div class="panel-grid">
-                    
                     <div class="form-side">
                         <form id="authForm" action="#" method="POST">
                             <div class="input-group">
@@ -67,10 +96,9 @@
                     </div>
 
                     <div class="illustration-side">
-                            <img src="secure.svg" alt="Secure Authentication" class="secure-vector-img">
+                        <img src="secure.svg" alt="Secure Authentication" class="secure-vector-img">
                         <p class="instruction-text">الرجاء إدخال اسم المستخدم \ الهوية الوطنية وكلمة المرور ثم اضغط تسجيل الدخول</p>
                     </div>
-
                 </div>
             </div>
 
