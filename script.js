@@ -25,9 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab.classList.contains('collapsed')) {
                 
                 // إذا نقر المستخدم على تبويب تطبيق نفاذ، نظهر التنبيه أولاً قبل التبديل
-                if (tab.id === 'tabNafathApp') {
-                    alert('طريقة التحقق عبر تطبيق نفاذ غير مفعلة حالياً، يرجى استخدام اسم المستخدم وكلمة المرور.');
-                }
+                
 
                 // أ) تحويل كافة التبويبات للحالة المغلقة وتغيير الأيقونات لـ (+)
                 tabs.forEach(t => {
