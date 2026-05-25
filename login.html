@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نفاذ - اسم المستخدم وكلمة المرور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="login-style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logos-group">
+                <div class="logo-item">
+                    <img src="nafath-logo.png" alt="شعار نفاذ" class="responsive-logo nafath-img">
+                </div>
+                <div class="logo-item vision-border">
+                    <img src="vision-logo.png" alt="شعار رؤية 2030" class="responsive-logo vision-img">
+                </div>
+            </div>
+            <div class="lang-switcher">
+                <i class="fa-solid fa-globe"></i>
+                <span>English</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="login-main-content">
+        <div class="accordion-container">
+            
+            <div class="accordion-item collapsed">
+                <span class="accordion-title">تطبيق نفاذ</span>
+                <i class="fa-solid fa-plus status-icon"></i>
+            </div>
+
+            <div class="accordion-item active">
+                <span class="accordion-title">اسم المستخدم وكلمة المرور</span>
+                <i class="fa-solid fa-minus status-icon"></i>
+            </div>
+
+            <div class="form-panel-card">
+                <div class="panel-grid">
+                    
+                    <div class="form-side">
+                        <form id="authForm" action="#" method="POST">
+                            <div class="input-group">
+                                <label for="username">اسم المستخدم \ الهوية الوطنية</label>
+                                <input type="text" id="username" placeholder="اسم المستخدم \ الهوية الوطنية" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="password">كلمة المرور</label>
+                                <input type="password" id="password" placeholder="كلمة المرور" required>
+                            </div>
+
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+                            </button>
+                        </form>
+
+                        <div class="form-actions-helpers">
+                            <a href="#" class="btn-helper"><i class="fa-solid fa-lock-open"></i> إعادة تعيين/تغيير كلمة المرور</a>
+                            <a href="#" class="btn-helper"><i class="fa-solid fa-user-plus"></i> حساب جديد</a>
+                        </div>
+                    </div>
+
+                    <div class="illustration-side">
+                        <div class="shield-graphic-container">
+                            <div class="isometric-shield">
+                                <i class="fa-solid fa-shield-halved main-shield"></i>
+                                <i class="fa-solid fa-key main-key"></i>
+                            </div>
+                        </div>
+                        <p class="instruction-text">الرجاء إدخال اسم المستخدم \ الهوية الوطنية وكلمة المرور ثم اضغط تسجيل الدخول</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="login-script.js"></script>
+</body>
+</html>
