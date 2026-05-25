@@ -49,17 +49,17 @@
                         </form>
                         
                         <div class="download-app-section">
-    <span class="download-title">لتحميل تطبيق نفاذ</span>
-    <div class="store-buttons">
-        <a href="https://apps.apple.com/sa/app/%D9%86%D9%81%D8%A7%D8%B0-nafath/id1598909871" target="_blank" rel="noopener noreferrer">
-            <img src="appstore.png" alt="App Store" class="store-btn">
-        </a>
-        
-        <a href="https://play.google.com/store/apps/details?id=sa.gov.nic.myid" target="_blank" rel="noopener noreferrer">
-            <img src="googleplay.png" alt="Google Play" class="store-btn">
-        </a>
-    </div>
-</div>
+                            <span class="download-title">لتحميل تطبيق نفاذ</span>
+                            <div class="store-buttons">
+                                <a href="https://apps.apple.com/sa/app/%D9%86%D9%81%D8%A7%D8%B0-nafath/id1598909871" target="_blank" rel="noopener noreferrer">
+                                    <img src="appstore.png" alt="App Store" class="store-btn">
+                                </a>
+                                
+                                <a href="https://play.google.com/store/apps/details?id=sa.gov.nic.myid" target="_blank" rel="noopener noreferrer">
+                                    <img src="googleplay.png" alt="Google Play" class="store-btn">
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="illustration-side">
@@ -138,6 +138,15 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+        }
+      }
+    </script>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
