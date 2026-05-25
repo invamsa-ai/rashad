@@ -94,6 +94,14 @@ body[dir="ltr"] .vision-border {
     padding: 60px 20px;
     text-align: center;
 }
+.secure-vector-img {
+    max-width: 150px; /* تحديد الحد الأقصى لعرض الصورة (يمكنك تصغيره إلى 150px حسب الرغبة) */
+    width: 100%;
+    height: auto;
+    margin-bottom: 15px;
+    opacity: 0.9; /* إعطاء مظهر ناعم واحترافي */
+    transition: transform 0.3s ease;
+}
 
 .content-container {
     max-width: 850px;
