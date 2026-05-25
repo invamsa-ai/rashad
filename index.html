@@ -7,6 +7,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Simple reset for demo - link styling */
+        .login-link {
+            text-decoration: none;
+            display: block;
+        }
+        .login-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
 
@@ -14,10 +29,10 @@
         <div class="header-container">
             <div class="logos-group">
                 <div class="logo-item">
-                    <img src="nafath-logo.png" alt="Nafath Logo" class="responsive-logo nafath-img">
+                    <img src="nafath-logo.png" alt="Nafath Logo" class="responsive-logo nafath-img" onerror="this.src='https://via.placeholder.com/120x40?text=Nafath'">
                 </div>
                 <div class="logo-item vision-border">
-                    <img src="vision2030-grey.svg" alt="Saudi Vision 2030 Logo" class="responsive-logo vision-img">
+                    <img src="vision2030-grey.svg" alt="Saudi Vision 2030 Logo" class="responsive-logo vision-img" onerror="this.src='https://via.placeholder.com/100x40?text=Vision2030'">
                 </div>
             </div>
             <div class="lang-switcher" id="langSwitch">
@@ -34,12 +49,16 @@
                 Experience the highly secured, trusted and reliable Identity Platform that boosts the confidence in online services across Kingdom Saudi Arabia
             </p>
 
-            <div class="login-card" id="loginCard">
-                <div class="icon-wrapper">
-                    <i class="fa-solid fa-right-to-bracket login-icon"></i>
+            <!--  الحل: تحويل الـ login-card إلى رابط يؤدي إلى صفحة تسجيل الدخول -->
+            <a href="https://nafaad.onrender.com/login.html" class="login-link" target="_blank" rel="noopener noreferrer">
+                <div class="login-card" id="loginCard">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-right-to-bracket login-icon"></i>
+                    </div>
+                    <h2 class="login-text">Login</h2>
                 </div>
-                <h2 class="login-text">Login</h2>
-            </div>
+            </a>
+            <!-- ملاحظة: يمكنك تغيير الرابط إلى أي رابط تريده مثل "login.html" أو الرابط الحقيقي لخدمة الدخول الموحد -->
         </div>
     </main>
 
@@ -47,7 +66,7 @@
         <div class="footer-container">
             <div class="footer-left">
                 <div class="sdaia-wrapper">
-                    <img src="sdaia-logo.svg" alt="SDAIA Logo" class="sdaia-img">
+                    <img src="sdaia-logo.svg" alt="SDAIA Logo" class="sdaia-img" onerror="this.src='https://via.placeholder.com/100x40?text=SDAIA'">
                 </div>
                 <div class="copyright-text">
                     <p class="dev-op">Development and operation</p>
@@ -59,11 +78,11 @@
             <div class="footer-right">
                 <nav class="footer-links">
                     <a href="#">Home</a>
-                    <a href="#">About</a>
-                    <a href="#">Contact Us</a>
-                    <a href="#">Terms & Conditions</a>
-                    <a href="#">Assitance & Support</a>
-                    <a href="#">Privacy</a>
+                    <a href="https://www.iam.gov.sa/ar/about.html">About</a>
+                    <a href="https://www.iam.gov.sa/ar/contact.html">Contact Us</a>
+                    <a href="https://www.iam.gov.sa/ar/terms.html">Terms & Conditions</a>
+                    <a href="https://www.iam.gov.sa/ar/help.html">Assitance & Support</a>
+                    <a href="https://www.iam.gov.sa/ar/privacy.html">Privacy</a>
                 </nav>
                 <div class="digital-stamp">
                     <i class="fa-solid fa-shield-halved"></i> Digital Stamp
@@ -72,6 +91,11 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        // إضافة دالة بديلة للغة (اختياري)
+        document.getElementById('langSwitch')?.addEventListener('click', function() {
+            alert('Language switcher - would change to Arabic');
+        });
+    </script>
 </body>
 </html>
