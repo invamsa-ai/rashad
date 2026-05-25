@@ -1,4 +1,6 @@
-/* Reset and Base Styles */
+/* ==========================================
+   1. الإعدادات العامة والأساسية (Global Styles)
+   ========================================== */
 * {
     margin: 0;
     padding: 0;
@@ -8,6 +10,7 @@
 
 body {
     background-color: #f8fafc;
+    /* نمط النقاط في الخلفية للمنصة */
     background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
     background-size: 24px 24px;
     color: #334155;
@@ -17,7 +20,9 @@ body {
     justify-content: space-between;
 }
 
-/* Header Styles */
+/* ==========================================
+   2. الهيدر المشترك (Header Styles)
+   ========================================== */
 .main-header {
     background-color: #ffffff;
     padding: 12px 5%;
@@ -38,7 +43,6 @@ body {
     gap: 20px;
 }
 
-/* التنسيق الخاص بالصور لضمان عدم تجاوز الأحجام الأصلية المتناسقة */
 .responsive-logo {
     display: block;
     height: auto;
@@ -46,14 +50,20 @@ body {
 }
 
 .nafath-img {
-    width: 130px; /* الحجم المثالي لشعار نفاذ في الهيدر */
+    width: 130px;
 }
 
 .vision-img {
-    width: 110px; /* الحجم المثالي لشعار الرؤية */
+    width: 110px;
 }
 
-.vision-border {
+/* التبديل بين الحدود حسب اتجاه الصفحة */
+body[dir="rtl"] .vision-border {
+    border-right: 1px solid #e2e8f0;
+    padding-right: 20px;
+}
+
+body[dir="ltr"] .vision-border {
     border-left: 1px solid #e2e8f0;
     padding-left: 20px;
 }
@@ -73,7 +83,9 @@ body {
     color: #008276;
 }
 
-/* Main Content Area */
+/* ==========================================
+   3. الصفحة الرئيسية (الواجهة الأولى)
+   ========================================== */
 .hero-section {
     flex-grow: 1;
     display: flex;
@@ -103,7 +115,6 @@ body {
     margin: 0 auto 45px auto;
 }
 
-/* Login Card Section */
 .login-card {
     background-color: #ffffff;
     width: 210px;
@@ -158,7 +169,208 @@ body {
     font-weight: 700;
 }
 
-/* Footer Section */
+/* ==========================================
+   4. صفحة نموذج تسجيل الدخول (الواجهة الثانية)
+   ========================================== */
+.login-main-content {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    flex-grow: 1;
+}
+
+.accordion-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.accordion-item {
+    padding: 15px 25px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+.accordion-item.collapsed {
+    background-color: #cccccc;
+    color: #555555;
+    cursor: pointer;
+}
+
+.accordion-item.active {
+    background-color: #008276;
+    color: #ffffff;
+}
+
+.status-icon {
+    font-size: 0.9rem;
+}
+
+.form-panel-card {
+    background-color: #ffffff;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+    padding: 40px;
+    margin-bottom: 40px;
+}
+
+.panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.form-side {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: #008276;
+    box-shadow: 0 0 0 3px rgba(0, 130, 118, 0.1);
+}
+
+.btn-submit {
+    background-color: #008276;
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    margin-bottom: 25px;
+}
+
+.btn-submit:hover {
+    background-color: #00695f;
+}
+
+.form-actions-helpers {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.btn-helper {
+    flex: 1;
+    text-align: center;
+    border: 1px solid #cbd5e1;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-helper:hover {
+    background-color: #f8fafc;
+    color: #008276;
+    border-color: #94a3b8;
+}
+
+.illustration-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+body[dir="rtl"] .illustration-side {
+    border-right: 1px solid #f1f5f9;
+    padding-right: 20px;
+}
+
+body[dir="ltr"] .illustration-side {
+    border-left: 1px solid #f1f5f9;
+    padding-left: 20px;
+}
+
+.shield-graphic-container {
+    margin-bottom: 30px;
+}
+
+.isometric-shield {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-shield {
+    font-size: 6rem;
+    color: #e2e8f0;
+}
+
+.main-key {
+    position: absolute;
+    font-size: 3rem;
+    color: #008276;
+    transform: rotate(-45deg);
+    bottom: 35px;
+    right: 20px;
+    animation: keyFloat 3s ease-in-out infinite;
+}
+
+.instruction-text {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.6;
+    max-width: 300px;
+}
+
+@keyframes keyFloat {
+    0%, 100% { transform: rotate(-45deg) translateY(0); }
+    50% { transform: rotate(-45deg) translateY(-6px); }
+}
+
+/* ==========================================
+   5. الفوتر المشترك (Footer Styles)
+   ========================================== */
 .main-footer {
     background-color: #f1f5f9;
     border-top: 1px solid #e2e8f0;
@@ -181,14 +393,8 @@ body {
     gap: 15px;
 }
 
-/* تنسيق حجم شعار سدايا في الفوتر */
-.sdaia-wrapper {
-    display: flex;
-    align-items: center;
-}
-
 .sdaia-img {
-    width: 160px; /* الحجم المناسب لشعار سدايا المدمج */
+    width: 160px;
     height: auto;
     object-fit: contain;
 }
@@ -239,16 +445,27 @@ body {
     border-radius: 6px;
 }
 
-/* Responsive Media Queries */
+/* ==========================================
+   6. التجاوب مع الشاشات (Responsive)
+   ========================================== */
 @media (max-width: 768px) {
-    .header-container, .footer-container {
+    .header-container, .footer-container, .panel-grid {
         flex-direction: column;
         align-items: center;
         text-align: center;
+        grid-template-columns: 1fr;
     }
     
-    .footer-right {
+    .footer-right, .illustration-side {
         align-items: center;
+        border: none;
+        padding: 0;
+    }
+
+    .illustration-side {
+        border-top: 1px solid #f1f5f9;
+        padding-top: 30px;
+        grid-row: 1;
     }
 
     .footer-links {
@@ -261,12 +478,12 @@ body {
         margin-bottom: 15px;
     }
 
-    .vision-border {
-        border-left: none;
-        padding-left: 0;
+    body[dir="rtl"] .vision-border, body[dir="ltr"] .vision-border {
+        border: none;
+        padding: 0;
     }
 
-    .main-title {
-        font-size: 1.3rem;
+    .form-actions-helpers {
+        flex-direction: column;
     }
 }
