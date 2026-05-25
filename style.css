@@ -254,10 +254,10 @@ body[dir="ltr"] .vision-border {
 
 .input-group input {
     width: 100%;
-    padding: 8px 12px; /* حجم موحد مصغر */
+    padding: 6px 20px; /* تم تقليل الارتفاع وزيادة العرض */
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 0.9rem; /* خط موحد مصغر */
+    font-size: 0.9rem;
     outline: none;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -271,8 +271,8 @@ body[dir="ltr"] .vision-border {
     background-color: #008276;
     color: #ffffff;
     border: none;
-    padding: 8px 12px; /* تم تعديله ليطابق حقول الإدخال تماماً */
-    font-size: 0.9rem; /* تم تعديله ليطابق حقول الإدخال */
+    padding: 6px 20px; /* تم تقليل الارتفاع وزيادة العرض ليطابق الـ input */
+    font-size: 0.9rem;
     font-weight: 700;
     border-radius: 6px;
     cursor: pointer;
@@ -299,11 +299,11 @@ body[dir="ltr"] .vision-border {
     flex: 1;
     text-align: center;
     border: 1px solid #cbd5e1;
-    padding: 8px 12px; /* تم تعديله ليطابق حقول الإدخال تماماً */
+    padding: 6px 20px; /* تم تقليل الارتفاع وزيادة العرض ليطابق الـ input */
     border-radius: 6px;
     text-decoration: none;
     color: #475569;
-    font-size: 0.9rem; /* تم تعديله ليطابق حقول الإدخال */
+    font-size: 0.9rem;
     font-weight: 600;
     display: flex;
     align-items: center;
