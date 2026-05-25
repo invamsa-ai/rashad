@@ -592,3 +592,6 @@ body[dir="ltr"] .illustration-side {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
+.hidden-panel {
+    display: none !important;
+}
