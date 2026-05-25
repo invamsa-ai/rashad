@@ -487,3 +487,43 @@ body[dir="ltr"] .illustration-side {
         flex-direction: column;
     }
 }
+/* كلاس إخفاء اللوحات التبادلية */
+.hidden-panel {
+    display: none !important;
+}
+
+/* تنسيق قسم تحميل التطبيقات وأزرار المتاجر الذكية */
+.download-app-section {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 20px;
+}
+
+.download-title {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.store-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.store-btn {
+    height: 34px;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.store-btn:hover {
+    transform: scale(1.04);
+}
