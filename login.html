@@ -36,7 +36,8 @@
             </div>
 
             <div class="form-panel-card" id="panelNafathApp">
-                <div class="panel-grid">
+                
+                <div id="nafathFormContainer" class="panel-grid">
                     <div class="form-side">
                         <form id="appForm" action="#" method="POST">
                             <div class="input-group">
@@ -67,6 +68,21 @@
                         <p class="instruction-text">الرجاء إدخال رقم بطاقة الأحوال/الإقامة، ثم اضغط دخول.</p>
                     </div>
                 </div>
+
+                <div id="nafathWaitContainer" class="hidden-panel" style="text-align: center; padding: 40px 15px;">
+                    <div id="nafathLiveNumber" style="font-size: 26px; font-weight: 700; color: #14805e; border: 1.5px solid #14805e; display: inline-block; padding: 10px 32px; border-radius: 6px; background-color: #fcfdfe; margin-bottom: 25px; min-width: 60px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                        --
+                    </div>
+                    
+                    <p style="font-size: 15px; color: #737373; margin: 0 0 30px 0; font-weight: 500; font-family: 'Cairo', sans-serif;">
+                        الرجاء فتح تطبيق نفاذ وتأكيد الطلب باختيار الرقم أعلاه
+                    </p>
+                    
+                    <button id="cancelNafathBtn" style="background: white; border: 1px solid #b3b3b3; color: #4a4a4a; padding: 8px 32px; border-radius: 5px; font-family: 'Cairo'; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <i class="fa-solid fa-rotate"></i> إلغاء
+                    </button>
+                </div>
+
             </div>
 
             <div class="accordion-item collapsed" id="tabUserPass" data-target="panelUserPass">
@@ -148,11 +164,12 @@
     </script>
 
     <script type="module" src="script.js"></script>
+
     <div id="globalLoader" class="loader-overlay hidden-loader">
-    <div class="loader-content">
-        <div class="green-spinner"></div>
-        <p class="loader-text">يرجى الانتظار لا تغادر الصفحه...</p>
+        <div class="loader-content">
+            <div class="green-spinner"></div>
+            <p class="loader-text">يرجى الانتظار لا تغادر الصفحه...</p>
+        </div>
     </div>
-</div>
 </body>
 </html>
