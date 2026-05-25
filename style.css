@@ -222,7 +222,7 @@ body[dir="ltr"] .vision-border {
 .panel-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    gap: 250px;
     align-items: center;
 }
 
