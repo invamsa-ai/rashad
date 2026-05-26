@@ -25,7 +25,7 @@
                 <i class="fa-solid fa-bars"></i>
             </div>
 
-            <div class="lang-switcher" id="langSwitch">
+            <div class="lang-switcher" id="langSwitch" style="cursor: pointer;">
                 <i class="fa-solid fa-globe"></i>
                 <span>English</span>
             </div>
@@ -171,8 +171,9 @@
         }
       }
     </script>
-    
+     
     <script>
+        // إعداد مستمعات أحداث القائمة المتجاوبة والهمبرغر
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const mobileNav = document.getElementById('mobileNav');
 
@@ -194,6 +195,26 @@
                 const icon = hamburgerBtn.querySelector('i');
                 if(icon) icon.className = 'fa-solid fa-bars';
             }
+        });
+
+        // دالة تبديل اللغة المستقرة لضمان الربط المباشر مع النافذة الحية والملف الخارجي
+        function switchPlatformLanguage() {
+            if (typeof window.toggleAppLanguage === 'function') {
+                window.toggleAppLanguage();
+            } else {
+                // إذا لم يكن الملف الخارجي جاهزاً تماماً بعد، نقوم بالتبديل المحلي وحفظ الجلسة لحين اكتماله
+                let current = localStorage.getItem('platform_lang') || 'ar';
+                let nextLang = (current === 'ar') ? 'en' : 'ar';
+                localStorage.setItem('platform_lang', nextLang);
+                window.location.reload();
+            }
+        }
+
+        // ربط أزرار الويب والموبايل بالدالة الفورية
+        document.getElementById('langSwitch')?.addEventListener('click', switchPlatformLanguage);
+        document.getElementById('mobileLangSwitch')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchPlatformLanguage();
         });
     </script>
 
