@@ -173,6 +173,41 @@
         }
       }
     </script>
+      <script>
+        // كود تشغيل القائمة عند الضغط على زر الهمبرجر
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobileNav = document.getElementById('mobileNav');
+
+        hamburgerBtn?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileNav.classList.toggle('active');
+            
+            // تغيير أيقونة الهمبرجر إلى X عند الفتح والعكس
+            const icon = hamburgerBtn.querySelector('i');
+            if (mobileNav.classList.contains('active')) {
+                icon.className = 'fa-solid fa-xmark';
+            } else {
+                icon.className = 'fa-solid fa-bars';
+            }
+        });
+
+        // إغلاق القائمة تلقائياً عند الضغط في أي مكان خارجها
+        document.addEventListener('click', function(e) {
+            if (!mobileNav.contains(e.target) && e.target !== hamburgerBtn) {
+                mobileNav.classList.remove('active');
+                const icon = hamburgerBtn.querySelector('i');
+                if(icon) icon.className = 'fa-solid fa-bars';
+            }
+        });
+
+        // أزرار تغيير اللغة
+        document.getElementById('langSwitch')?.addEventListener('click', function() {
+            alert('Language switcher - would change to Arabic');
+        });
+        document.getElementById('mobileLangSwitch')?.addEventListener('click', function() {
+            alert('Language switcher - would change to Arabic');
+        });
+    </script>
 
     <script type="module" src="script.js"></script>
 
