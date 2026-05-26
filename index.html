@@ -7,6 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* لضمان الحفاظ على تنسيق الكارد بعد تحويله إلى وسم رابط <a> */
+        a.login-card {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
@@ -46,12 +55,12 @@
                 منصة وطنية مخصصة لإصدار وإدارة الهويات الرقمية للمواطنين والمقيمين، تهدف إلى توفير وصول آمن وموحد للخدمات الحكومية والخاصة عبر الإنترنت.
             </p>
 
-            <div class="login-card" id="loginCard">
+            <a href="login.html" class="login-card" id="loginCard" onclick="window.location.href='login.html';">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-right-to-bracket login-icon"></i>
                 </div>
                 <h2 class="login-text">تسجيل الدخول</h2>
-            </div>
+            </a>
         </div>
     </main>
 
