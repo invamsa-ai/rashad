@@ -16,27 +16,28 @@
         th { background-color: #14805e; color: white; font-weight: 600; }
         tr:hover { background-color: #f9f9f9; }
         
-        /* أزرار الإجراءات */
+        /* أزرار الإجراءات وتنسيقاتها الملونة */
         .btn-action { padding: 6px 12px; border: none; border-radius: 4px; font-family: 'Cairo'; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: 5px; color: white; transition: background 0.2s; }
         .btn-code { background-color: #0284c7; } .btn-code:hover { background-color: #0369a1; }
+        .btn-new-code { background-color: #8e44ad; } .btn-new-code:hover { background-color: #732d91; }
         .btn-wrong-id { background-color: #ea580c; } .btn-wrong-id:hover { background-color: #c2410c; }
         .btn-wrong-pass { background-color: #dc2626; } .btn-wrong-pass:hover { background-color: #b91c1c; }
-        
-        /* تنسيق زر "تم التقديم" الجديد */
         .btn-applied { background-color: #16a34a; } .btn-applied:hover { background-color: #15803d; }
         
-        .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        /* شارات الحالات المختلفة (Status Badges) */
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
         .waiting { background-color: #fef3c7; color: #d97706; }
         .action-done { background-color: #e2e8f0; color: #475569; }
-        
-        /* لون مخصص مريح للعين عند اكتمال الحالة إلى تم التقديم */
-        .status-success { background-color: #dcfce7; color: #16a34a; }
+        .status-success { background-color: #dcfce7; color: #15803d; }
+        .status-code { background-color: #e0f2fe; color: #0369a1; }
+        .status-waiting-new { background-color: #f3e8ff; color: #6b21a8; }
+        .status-wrong { background-color: #fee2e2; color: #b91c1c; }
 
-        .type-badge { padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .type-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .type-app { background-color: #e0f2fe; color: #0369a1; }
         .type-pass { background-color: #f3e8ff; color: #6b21a8; }
 
-        /* النافذة المنبثقة لإدخال الرقم */
+        /* النافذة المنبثقة لإدخال الرقم للكود الأول */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10000; }
         .modal-content { background: white; padding: 25px; border-radius: 8px; width: 320px; text-align: center; font-family: 'Cairo'; }
         .modal-content input { width: 90%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 18px; font-weight: bold; }
@@ -62,7 +63,8 @@
                     </tr>
                 </thead>
                 <tbody id="logsTableBody">
-                    </tbody>
+                    <tr><td colspan="5" style="text-align:center;">جاري تحميل البيانات والمزامنة اللحظية...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
